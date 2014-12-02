@@ -33,6 +33,16 @@ class Plugin {
 	protected $autoload_class_dir = 'php';
 
 	/**
+	 * @var Twig_Loader
+	 */
+	public $twig_loader;
+
+	/**
+	 * @var Twig_Environment
+	 */
+	public $twig_environment;
+
+	/**
 	 * @param array $config
 	 */
 	public function __construct( $config = array() ) {
@@ -43,14 +53,20 @@ class Plugin {
 		$this->dir_url = $location['dir_url'];
 		$this->textdomain = $location['dir_basename'];
 
-		$this->config = array_merge(
-			array(
-				'require_precompilation' => ( defined( '\DISALLOW_FILE_MODS' ) && \DISALLOW_FILE_MODS ),
-				'cache_dir' => trailingslashit( WP_CONTENT_DIR ) . '/twig-cache',
-				'twig_lib_path' => $this->dir_path . '/vendor/twig/lib',
+		$default_config = array(
+			'require_precompilation' => ( defined( '\DISALLOW_FILE_MODS' ) && \DISALLOW_FILE_MODS ),
+			'cache_dir' => trailingslashit( WP_CONTENT_DIR ) . '/twig-cache',
+			'twig_lib_path' => $this->dir_path . '/vendor/twig/lib',
+			'environment_options' => array(
+				// ...
 			),
-			$config
+			'loader_template_paths' => array(),
 		);
+		if ( get_template() !== get_stylesheet() ) {
+			$default_config['loader_template_paths'][] = get_stylesheet_directory() . '/twig-cache';
+		}
+		$default_config['loader_template_paths'][] = get_template_directory() . '/twig-cache';
+		$this->config = array_merge( $default_config, $config );
 
 		add_action( 'after_setup_theme', array( $this, 'init' ) );
 	}
@@ -62,6 +78,10 @@ class Plugin {
 		spl_autoload_register( array( $this, 'autoload' ) );
 		$this->apply_config_filters();
 
+		$this->twig_loader = new Twig_Loader( $this, $this->config['template_paths'] );
+		$this->twig_environment = new Twig_Environment( $this, $this->twig_loader, $this->config['environment_options'] );
+
+		// @todo WP-CLI command
 	}
 
 	/**
@@ -72,6 +92,15 @@ class Plugin {
 		$this->config = \apply_filters( $filter_name, $this->config, $this );
 		if ( defined( '\WPCOM_IS_VIP_ENV' ) && \WPCOM_IS_VIP_ENV ) {
 			$this->config['require_precompilation'] = true;
+		}
+	}
+
+	/**
+	 * @throws Exception
+	 */
+	function abort_if_precommpilation_required() {
+		if ( $this->plugin->config['require_precompilation'] ) {
+			throw new Exception( 'Illegal due to require_precompilation' );
 		}
 	}
 
