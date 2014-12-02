@@ -18,5 +18,9 @@ if ( version_compare( phpversion(), '5.3', '>=' ) ) {
 	function vip_twig_php_version_error() {
 		printf( '<div class="error"><p>%s</p></div>', esc_html__( 'VIP Twig error: Your version of PHP is too old to run this plugin. You must be running PHP 5.3 or higher.', 'vip-twig' ) );
 	}
-	add_action( 'admin_notices', 'vip_twig_php_version_error' );
+	if ( defined( 'WP_CLI' ) ) {
+		WP_CLI::warning( __( 'VIP Twig: Your PHP version is too old. You must have 5.3 or higher.', 'vip-twig' ) );
+	} else {
+		add_action( 'admin_notices', 'vip_twig_php_version_error' );
+	}
 }
