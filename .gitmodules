@@ -1,3 +1,6 @@
 [submodule "vendor/twig"]
 	path = vendor/twig
 	url = https://github.com/twigphp/Twig.git
+[submodule "dev-lib"]
+	path = dev-lib
+	url = https://github.com/xwp/wp-plugin-dev-lib.git
