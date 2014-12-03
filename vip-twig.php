@@ -14,6 +14,13 @@ if ( version_compare( phpversion(), '5.3', '>=' ) ) {
 	require __DIR__ . '/php/class-plugin.php';
 	$class_name = '\VIP_Twig\Plugin';
 	$GLOBALS['vip_twig_plugin'] = new $class_name();
+
+	/**
+	 * @return \VIP_Twig\Twig_Environment
+	 */
+	function vip_twig_environment() {
+		return $GLOBALS['vip_twig_plugin']->twig_environment();
+	};
 } else {
 	function vip_twig_php_version_error() {
 		printf( '<div class="error"><p>%s</p></div>', esc_html__( 'VIP Twig error: Your version of PHP is too old to run this plugin. You must be running PHP 5.3 or higher.', 'vip-twig' ) );
