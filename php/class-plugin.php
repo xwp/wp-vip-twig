@@ -10,7 +10,7 @@ class Plugin {
 	/**
 	 * @var array
 	 */
-	public $config;
+	public $config = array();
 
 	/**
 	 * @var string
@@ -51,21 +51,26 @@ class Plugin {
 		$this->slug = $location['dir_basename'];
 		$this->dir_path = $location['dir_path'];
 		$this->dir_url = $location['dir_url'];
-		$this->textdomain = $location['dir_basename'];
 
 		$default_config = array(
-			'require_precompilation' => ( defined( '\DISALLOW_FILE_MODS' ) && \DISALLOW_FILE_MODS ),
-			'cache_dir' => trailingslashit( WP_CONTENT_DIR ) . '/twig-cache',
+			'precompilation_required' => ( ( defined( '\DISALLOW_FILE_MODS' ) && \DISALLOW_FILE_MODS ) || $this->is_wp_vip_env() ),
 			'twig_lib_path' => $this->dir_path . '/vendor/twig/lib',
 			'environment_options' => array(
-				// ...
+				'cache' => trailingslashit( $this->is_wp_vip_env() ? get_stylesheet_directory() : WP_CONTENT_DIR ) . 'twig-cache',
+				'debug' => ( defined( '\WP_DEBUG' ) && \WP_DEBUG ),
+				'strict_variables' => true,
+				'auto_reload' => ! $this->is_wp_vip_env(),
 			),
 			'loader_template_paths' => array(),
+			'force_wp_vip_env' => false,
+			'charset' => ( $this->is_wp_vip_env() ? 'latin1' : 'UTF-8' ),
 		);
 		if ( get_template() !== get_stylesheet() ) {
-			$default_config['loader_template_paths'][] = get_stylesheet_directory() . '/twig-cache';
+			$default_config['loader_template_paths'][] = trailingslashit( get_stylesheet_directory() ) . 'twig';
 		}
-		$default_config['loader_template_paths'][] = get_template_directory() . '/twig-cache';
+		$default_config['loader_template_paths'][] = trailingslashit( get_template_directory() ) . 'twig';
+		// Plugins will probably prepend loader_template_paths with more paths
+
 		$this->config = array_merge( $default_config, $config );
 
 		add_action( 'after_setup_theme', array( $this, 'init' ) );
@@ -77,6 +82,7 @@ class Plugin {
 	function init() {
 		spl_autoload_register( array( $this, 'autoload' ) );
 		$this->apply_config_filters();
+		$this->validate_config();
 
 		$this->twig_loader = new Twig_Loader( $this, $this->config['template_paths'] );
 		$this->twig_environment = new Twig_Environment( $this, $this->twig_loader, $this->config['environment_options'] );
@@ -85,22 +91,85 @@ class Plugin {
 	}
 
 	/**
-	 * Apply 'vip_twig_plugin_config' filters for $this->config
+	 * @return bool
+	 */
+	function is_wp_vip_env() {
+		return ! empty( $this->config['force_wp_vip_env'] ) || ( defined( '\WPCOM_IS_VIP_ENV' ) && \WPCOM_IS_VIP_ENV );
+	}
+
+	/**
+	 * Apply 'vip_twig_plugin_config' filters for $this->config and validate config for environment.
 	 */
 	function apply_config_filters() {
 		$filter_name = $this->prefix( 'plugin_config' );
 		$this->config = \apply_filters( $filter_name, $this->config, $this );
-		if ( defined( '\WPCOM_IS_VIP_ENV' ) && \WPCOM_IS_VIP_ENV ) {
-			$this->config['require_precompilation'] = true;
+	}
+
+	/**
+	 * @throws Exception
+	 */
+	function validate_config() {
+		if ( $this->is_wp_vip_env() ) {
+			if ( empty( $this->config['precompilation_required'] ) ) {
+				trigger_error( 'precompilation_required=true is required on VIP', E_USER_WARNING );
+				$this->config['precompilation_required'] = true;
+			}
+			if ( empty( $this->config['environment_options']['strict_variables'] ) ) {
+				trigger_error( 'environment_options.strict_variables=true is required on VIP', E_USER_WARNING );
+				$this->config['environment_options']['strict_variables'] = true;
+			}
+			if ( ! empty( $this->config['debug'] ) ) {
+				trigger_error( 'debug=false is required on VIP', E_USER_WARNING );
+				$this->config['debug'] = false;
+			}
+			if ( ! empty( $this->config['environment_options']['auto_reload'] ) ) {
+				trigger_error( 'auto_reload=false is required on VIP', E_USER_WARNING );
+				$this->config['environment_options']['auto_reload'] = false;
+			}
+		}
+		$this->assert_valid_cache_dir( $this->config['environment_options']['cache'] );
+	}
+
+	/**
+	 * @param $directory
+	 *
+	 * @throws Exception
+	 */
+	function assert_valid_cache_dir( $directory ) {
+		$abs_cache_dir = trailingslashit( realpath( $directory ) );
+		if ( $this->is_wp_vip_env() ) {
+			$stylesheet_directory = trailingslashit( realpath( get_stylesheet_directory() ) );
+			if ( 0 !== strpos( $abs_cache_dir, $stylesheet_directory ) ) {
+				throw new Exception( sprintf( 'On VIP, your twig-cache must be located within the stylesheet directory: %s is not inside %s', $abs_cache_dir, $stylesheet_directory ) );
+			}
+		}
+		if ( ! file_exists( $abs_cache_dir ) ) {
+			throw new Exception( sprintf( 'Twig cache directory does not exist: %s', $abs_cache_dir ) );
+		}
+	}
+
+	/**
+	 * @return bool
+	 */
+	function is_precompilation_required() {
+		return $this->is_wp_vip_env() || ! empty( $this->config['precompilation_required'] );
+	}
+
+	/**
+	 * @throws Exception
+	 */
+	function abort_if_precompilation_required() {
+		if ( $this->is_precompilation_required() ) {
+			throw new Exception( 'Illegal due to precompilation_required' );
 		}
 	}
 
 	/**
 	 * @throws Exception
 	 */
-	function abort_if_precommpilation_required() {
-		if ( $this->plugin->config['require_precompilation'] ) {
-			throw new Exception( 'Illegal due to require_precompilation' );
+	function abort_if_is_wp_vip_env() {
+		if ( $this->is_wp_vip_env() ) {
+			throw new Exception( 'Illegal since on WP VIP' );
 		}
 	}
 
