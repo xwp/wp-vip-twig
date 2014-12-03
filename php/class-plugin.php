@@ -53,17 +53,17 @@ class Plugin {
 		$this->dir_url = $location['dir_url'];
 
 		$default_config = array(
-			'precompilation_required' => ( ! $this->is_wp_debug() && ( $this->is_wp_vip_env() || $this->is_disallow_file_mods() ) ),
+			'precompilation_required' => ( $this->is_wpcom_vip_prod() || $this->is_disallow_file_mods() ),
 			'twig_lib_path' => $this->dir_path . '/vendor/twig/lib',
 			'environment_options' => array(
-				'cache' => trailingslashit( $this->is_wp_vip_env() ? get_stylesheet_directory() : WP_CONTENT_DIR ) . 'twig-cache',
+				'cache' => trailingslashit( $this->is_wpcom_vip() ? get_stylesheet_directory() : WP_CONTENT_DIR ) . 'twig-cache',
 				'debug' => $this->is_wp_debug(),
-				'auto_reload' => $this->is_wp_debug(),
+				'auto_reload' => ( $this->is_wp_debug() && ! $this->is_disallow_file_mods() ),
 				'strict_variables' => true,
 			),
 			'loader_template_paths' => array(),
 			'vip_plugin_folders' => array( 'plugins' ), // On VIP, you may want to filter the config to add 'acmecorp-plugins'
-			'charset' => ( $this->is_wp_vip_env() ? 'latin1' : 'UTF-8' ),
+			'charset' => ( $this->is_wpcom_vip() ? 'latin1' : 'UTF-8' ),
 		);
 		if ( get_template() !== get_stylesheet() ) {
 			$default_config['loader_template_paths'][] = trailingslashit( get_stylesheet_directory() );
@@ -100,8 +100,22 @@ class Plugin {
 	/**
 	 * @return bool
 	 */
-	function is_wp_vip_env() {
+	function is_wpcom_vip() {
+		return defined( 'WPCOM_IS_VIP_ENV' );
+	}
+
+	/**
+	 * @return bool
+	 */
+	function is_wpcom_vip_prod() {
 		return ( defined( '\WPCOM_IS_VIP_ENV' ) && \WPCOM_IS_VIP_ENV );
+	}
+
+	/**
+	 * @return bool
+	 */
+	function is_wpcom_vip_dev() {
+		return ( defined( '\WPCOM_IS_VIP_ENV' ) && ! \WPCOM_IS_VIP_ENV );
 	}
 
 	/**
@@ -123,23 +137,19 @@ class Plugin {
 	 * @throws Exception
 	 */
 	function validate_config() {
-		if ( $this->is_wp_vip_env() && ! $this->is_wp_debug() ) {
-			if ( ! empty( $this->config['debug'] ) ) {
-				trigger_error( 'Twig debug=false is required on VIP', E_USER_WARNING );
-				$this->config['debug'] = false;
-			}
+		if ( $this->is_wpcom_vip_prod() || ( $this->is_wpcom_vip() && ! $this->is_wp_debug() ) ) {
 			if ( empty( $this->config['precompilation_required'] ) && $this->is_disallow_file_mods() ) {
 				trigger_error( 'VIP Twig precompilation_required=true is required on VIP', E_USER_NOTICE );
 				$this->config['precompilation_required'] = true;
 			}
-			if ( ! empty( $this->config['environment_options']['auto_reload'] ) && $this->is_disallow_file_mods() ) {
-				trigger_error( 'auto_reload=false is required on VIP', E_USER_WARNING );
-				$this->config['environment_options']['auto_reload'] = false;
+			if ( ! empty( $this->config['debug'] ) ) {
+				trigger_error( 'Twig debug=false is required on VIP', E_USER_WARNING );
+				$this->config['debug'] = false;
 			}
-			if ( empty( $this->config['environment_options']['strict_variables'] ) ) {
-				trigger_error( 'Twig environment_options.strict_variables=true is required on VIP', E_USER_WARNING );
-				$this->config['environment_options']['strict_variables'] = true;
-			}
+		}
+		if ( ! empty( $this->config['environment_options']['auto_reload'] ) && $this->is_disallow_file_mods() ) {
+			trigger_error( 'Twig auto_reload=false not available since DISALLOW_FILE_MODS', E_USER_WARNING );
+			$this->config['environment_options']['auto_reload'] = false;
 		}
 		if ( ! $this->is_valid_cache_directory( $this->config['environment_options']['cache'] ) ) {
 			throw new Exception( 'Invalid cache directory: ' . $this->config['environment_options']['cache'] );
@@ -175,7 +185,7 @@ class Plugin {
 	 * @return bool
 	 */
 	function is_valid_cache_directory( $cache_directory ) {
-		$root = $this->is_wp_vip_env() ? get_stylesheet_directory() : WP_CONTENT_DIR;
+		$root = $this->is_wpcom_vip_prod() ? get_stylesheet_directory() : WP_CONTENT_DIR;
 		return $this->is_directory_containing( $root, $cache_directory );
 	}
 
@@ -188,7 +198,7 @@ class Plugin {
 		if ( get_template() !== get_stylesheet() ) {
 			$valid_source_roots[] = get_template_directory();
 		}
-		if ( $this->is_wp_vip_env() ) {
+		if ( $this->is_wpcom_vip_prod() ) {
 			if ( ! empty( $this->config['vip_plugin_folders'] ) ) {
 				foreach ( $this->config['vip_plugin_folders'] as $folder ) {
 					$valid_source_roots[] = WP_CONTENT_DIR . "/themes/vip/$folder";
@@ -225,7 +235,7 @@ class Plugin {
 	 * @throws Exception
 	 */
 	function abort_if_is_wp_vip_env() {
-		if ( $this->is_wp_vip_env() ) {
+		if ( $this->is_wpcom_vip_prod() ) {
 			throw new Exception( 'Illegal since on WP VIP' );
 		}
 	}

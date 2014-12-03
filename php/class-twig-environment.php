@@ -37,13 +37,6 @@ class Twig_Environment extends \Twig_Environment {
 		return $auto_reload;
 	}
 
-	public function disableStrictVariables() {
-		if ( $this->plugin->is_wp_vip_env() && ! $this->plugin->is_wp_debug() ) {
-			throw new Exception( 'Strict variables cannot be disabled on VIP without WP_DEBUG enabled.' );
-		}
-		parent::disableStrictVariables();
-	}
-
 	public function setCache( $cache ) {
 		if ( ! $cache ) {
 			$this->plugin->abort_if_precompilation_required();
