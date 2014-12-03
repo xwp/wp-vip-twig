@@ -53,7 +53,7 @@ class Plugin {
 		$this->dir_url = $location['dir_url'];
 
 		$default_config = array(
-			'precompilation_required' => ( $this->is_wpcom_vip_prod() || $this->is_disallow_file_mods() ),
+			'precompilation_required' => ( $this->is_wpcom_vip_prod() || ( $this->is_disallow_file_mods() && ! $this->is_wp_debug() ) ),
 			'twig_lib_path' => $this->dir_path . '/vendor/twig/lib',
 			'environment_options' => array(
 				'cache' => trailingslashit( $this->is_wpcom_vip() ? get_stylesheet_directory() : WP_CONTENT_DIR ) . 'twig-cache',
