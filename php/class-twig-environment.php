@@ -47,6 +47,25 @@ class Twig_Environment extends \Twig_Environment {
 	}
 
 	/**
+	 * Gets the cache filename for a given template.
+	 *
+	 * @param string $name The template name
+	 *
+	 * @return string|false The cache file name or false when caching is disabled
+	 */
+	public function getCacheFilename( $name ) {
+		if ( false === $this->cache ) {
+			return false;
+		}
+		$cache_filename = $name;
+		$cache_filename = preg_replace( '#//+#', '/', $cache_filename );
+		$cache_filename = preg_replace( '#\.+/#', '', $cache_filename ); // @todo better scrub of relative paths? Can relative paths even be used?
+		$cache_filename .= '.' . substr( hash( 'sha256', $this->getLoader()->getCacheKey( $name ) ), 0, 6 ); // @todo This probably is not necessary
+		$cache_filename .= '.php';
+		return $this->getCache() . '/' . $cache_filename;
+	}
+
+	/**
 	 * Loads a template by name.
 	 *
 	 * @param string  $name  The template name

@@ -87,6 +87,8 @@ class Plugin {
 		$this->twig_loader = new Twig_Loader( $this, $this->config['loader_template_paths'] );
 		$this->twig_environment = new Twig_Environment( $this, $this->twig_loader, $this->config['environment_options'] );
 
+		// @todo $this->twig_environment->getExtension( 'core' )->setEscaper( 'kses', 'wp_kses' );
+
 		// @todo WP-CLI command which iterates over all *.twig files in $this->config['loader_template_paths']
 	}
 
