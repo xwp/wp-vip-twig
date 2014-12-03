@@ -14,4 +14,15 @@ class Twig_Loader extends \Twig_Loader_Filesystem {
 		parent::__construct( $paths );
 	}
 
+	function setPaths( $paths, $namespace = parent::MAIN_NAMESPACE ) {
+		if ( $this->plugin->is_wp_vip_env() ) {
+			foreach ( $paths as $path ) {
+				if ( file_exists( $path ) && ! $this->plugin->is_valid_source_directory( $path ) ) {
+					throw new Exception( 'Invalid template source directory: ' . $path );
+				}
+			}
+		}
+		parent::setPaths( $paths, $namespace );
+	}
+
 }

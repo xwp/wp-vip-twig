@@ -63,6 +63,7 @@ class Plugin {
 			),
 			'loader_template_paths' => array(),
 			'force_wp_vip_env' => false,
+			'vip_plugin_folders' => array( 'plugins' ), // On VIP, you may want to filter the config to add 'acmecorp-plugins'
 			'charset' => ( $this->is_wp_vip_env() ? 'latin1' : 'UTF-8' ),
 		);
 		if ( get_template() !== get_stylesheet() ) {
@@ -127,25 +128,68 @@ class Plugin {
 				$this->config['environment_options']['auto_reload'] = false;
 			}
 		}
-		$this->assert_valid_cache_dir( $this->config['environment_options']['cache'] );
+		if ( ! $this->is_valid_cache_directory( $this->config['environment_options']['cache'] ) ) {
+			throw new Exception( 'Invalid cache directory: ' . $this->config['environment_options']['cache'] );
+		}
+		foreach ( $this->config['loader_template_paths'] as $template_path ) {
+			if ( file_exists( $template_path ) && ! $this->is_valid_source_directory( $template_path ) ) {
+				throw new Exception( 'Invalid template source directory: ' . $template_path );
+			}
+		}
 	}
 
 	/**
-	 * @param $directory
+	 * @param string $parent_directory
+	 * @param string $child_file_or_directory
 	 *
-	 * @throws Exception
+	 * @return bool
 	 */
-	function assert_valid_cache_dir( $directory ) {
-		$abs_cache_dir = trailingslashit( realpath( $directory ) );
+	function is_directory_containing( $parent_directory, $child_file_or_directory ) {
+		$parent_directory = trailingslashit( realpath( $parent_directory ) );
+		$child_file_or_directory = realpath( $child_file_or_directory );
+		if ( ! file_exists( $child_file_or_directory ) ) {
+			return false;
+		}
+		if ( is_dir( $child_file_or_directory ) ) {
+			$child_file_or_directory = trailingslashit( $child_file_or_directory );
+		}
+		$is_contained = ( 0 === strpos( $child_file_or_directory, $parent_directory ) );
+		return $is_contained;
+	}
+
+	/**
+	 * @param $cache_directory
+	 * @return bool
+	 */
+	function is_valid_cache_directory( $cache_directory ) {
+		$root = $this->is_wp_vip_env() ? get_stylesheet_directory() : WP_CONTENT_DIR;
+		return $this->is_directory_containing( $root, $cache_directory );
+	}
+
+	/**
+	 * @param string $source_directory
+	 * @return bool
+	 */
+	function is_valid_source_directory( $source_directory ) {
+		$valid_source_roots = array( get_stylesheet_directory() );
+		if ( get_template() !== get_stylesheet() ) {
+			$valid_source_roots[] = get_template_directory();
+		}
 		if ( $this->is_wp_vip_env() ) {
-			$stylesheet_directory = trailingslashit( realpath( get_stylesheet_directory() ) );
-			if ( 0 !== strpos( $abs_cache_dir, $stylesheet_directory ) ) {
-				throw new Exception( sprintf( 'On VIP, your twig-cache must be located within the stylesheet directory: %s is not inside %s', $abs_cache_dir, $stylesheet_directory ) );
+			if ( ! empty( $this->config['vip_plugin_folders'] ) ) {
+				foreach ( $this->config['vip_plugin_folders'] as $folder ) {
+					$valid_source_roots[] = WP_CONTENT_DIR . "/themes/vip/$folder";
+				}
+			}
+		} else {
+			$valid_source_roots[] = WP_CONTENT_DIR;
+		}
+		foreach ( $valid_source_roots as $valid_source_root ) {
+			if ( $this->is_directory_containing( $valid_source_root, $source_directory ) ) {
+				return true;
 			}
 		}
-		if ( ! file_exists( $abs_cache_dir ) ) {
-			throw new Exception( sprintf( 'Twig cache directory does not exist: %s', $abs_cache_dir ) );
-		}
+		return false;
 	}
 
 	/**
