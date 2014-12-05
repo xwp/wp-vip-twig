@@ -66,6 +66,20 @@ class Twig_Environment extends \Twig_Environment {
 	}
 
 	/**
+	 * Gets the template class associated with the given string.
+	 *
+	 * @param string  $name  The name for which to calculate the template class name
+	 * @param int     $index The index if it is an embedded template
+	 *
+	 * @return string The template class name
+	 */
+	public function getTemplateClass($name, $index = null) {
+		$short_hash = substr( hash( 'sha256', $this->getLoader()->getCacheKey( $name ) ), 0, 6 );
+		return $this->templateClassPrefix . preg_replace( '/\W/', '_', $name ) . '_' . $short_hash . (null === $index ? '' : '_'.$index);
+	}
+
+
+	/**
 	 * Loads a template by name.
 	 *
 	 * @param string  $name  The template name
