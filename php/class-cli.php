@@ -25,6 +25,41 @@ class CLI extends \WP_CLI_Command {
 	}
 
 	/**
+	 * Find all files with the $pattern inside of $root_directory.
+	 *
+	 * @param $root_directory
+	 * @param $pattern
+	 *
+	 * @return array
+	 */
+	protected function find_files( $root_directory, $pattern ) {
+		$found_files = array();
+		$it = new \RecursiveIteratorIterator( new \RecursiveDirectoryIterator( $root_directory ), \RecursiveIteratorIterator::LEAVES_ONLY );
+		foreach ( $it as $file ) {
+			if ( $file->isFile() && preg_match( $pattern, $file->getPathname() ) ) {
+				$found_files[] = $file->getPathname();
+			}
+		}
+		return $found_files;
+	}
+
+	/**
+	 * Remove $prefix from beginning of $string; throw exception if it is not the prefix.
+	 *
+	 * @param $prefix
+	 * @param $string
+	 *
+	 * @return string
+	 * @throws Exception
+	 */
+	protected function strip_prefix( $prefix, $string ) {
+		if ( 0 !== strpos( $string, $prefix ) ) {
+			throw new Exception( "Expected prefix '$prefix' to be at start of '$string'." );
+		}
+		return substr( $string, strlen( $prefix ) );
+	}
+
+	/**
 	 * Re-compile all *.twig templates located on the plugin's loader_template_paths.
 	 *
 	 * ## OPTIONS
@@ -64,24 +99,23 @@ class CLI extends \WP_CLI_Command {
 
 			$twig_templates = array();
 			foreach ( $this->plugin->config['loader_template_paths'] as $path ) {
+				$path = trailingslashit( realpath( $path ) );
 				if ( ! file_exists( $path ) ) {
 					\WP_CLI::line( 'Skipping non-existent loader_template_path: ' . $path );
 					continue;
 				}
-				$it = new \RecursiveIteratorIterator( new \RecursiveDirectoryIterator( $path ), \RecursiveIteratorIterator::LEAVES_ONLY );
 				$found = 0;
-				foreach ( $it as $file ) {
-					if ( $file->isFile() && preg_match( '/\.twig$/', $file->getPathname() ) ) {
-						$twig_template = $file->getPathname();
-						$twig_templates[] = substr( $twig_template, strlen( trailingslashit( $path ) ) );
-						$found += 1;
-					}
+				foreach ( $this->find_files( $path, '/\.twig$/' ) as $twig_template ) {
+					$twig_template = $this->strip_prefix( $path, $twig_template );
+					$twig_templates[] = $twig_template;
+					$found += 1;
 				}
 				\WP_CLI::line( sprintf( 'Found %d *.twig file(s) in %s', $found, $path ) );
 
 			}
 			if ( empty( $twig_templates ) ) {
-				\WP_CLI::warning( 'No twig files were found in the loader_template_paths.' );
+				\WP_CLI::error( 'No twig files were found in the loader_template_paths.' );
+				return;
 			}
 			$twig_templates = array_unique( $twig_templates );
 
