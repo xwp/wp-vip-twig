@@ -85,12 +85,6 @@ class CLI extends \WP_CLI_Command {
 			}
 			$twig_templates = array_unique( $twig_templates );
 
-			if ( $assoc_args['force'] ) {
-				\WP_CLI::line( 'Clear Twig cache' );
-				$this->plugin->twig_environment()->clearCacheFiles(); // TODO: Remove directories too
-				// TODO: do a cleanup phase after this instead, to remove any PHP file not found
-			}
-
 			$this->plugin->config['precompilation_required'] = false;
 
 			$twig_env = $this->plugin->twig_environment();
