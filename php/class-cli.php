@@ -52,8 +52,14 @@ class CLI extends \WP_CLI_Command {
 				throw new Exception( 'No cache config supplied.' );
 			}
 			$cache_dir = $this->plugin->config['environment_options']['cache'];
-			if ( ! file_exists( $cache_dir ) && ! mkdir( $cache_dir ) ) {
-				throw new Exception( 'Unable to create cache directory: ' . $cache_dir );
+			if ( ! file_exists( $cache_dir ) ) {
+				if ( mkdir( $cache_dir ) ) {
+					\WP_CLI::line( 'Creating cache directory: ' . $cache_dir );
+				} else {
+					throw new Exception( 'Unable to create cache directory: ' . $cache_dir );
+				}
+			} else {
+				\WP_CLI::line( 'Cache directory: ' . $cache_dir );
 			}
 
 			$twig_templates = array();

@@ -168,9 +168,6 @@ class Plugin {
 			trigger_error( 'Twig auto_reload=false not available since DISALLOW_FILE_MODS', E_USER_WARNING );
 			$this->config['environment_options']['auto_reload'] = false;
 		}
-		if ( ! $this->is_valid_cache_directory( $this->config['environment_options']['cache'] ) ) {
-			throw new Exception( 'Invalid cache directory: ' . $this->config['environment_options']['cache'] );
-		}
 		foreach ( $this->config['loader_template_paths'] as $template_path ) {
 			if ( file_exists( $template_path ) && ! $this->is_valid_source_directory( $template_path ) ) {
 				throw new Exception( 'Invalid template source directory: ' . $template_path );

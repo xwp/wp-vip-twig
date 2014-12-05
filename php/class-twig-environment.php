@@ -40,8 +40,6 @@ class Twig_Environment extends \Twig_Environment {
 	public function setCache( $cache ) {
 		if ( ! $cache ) {
 			$this->plugin->abort_if_precompilation_required();
-		} else if ( ! $this->plugin->is_valid_cache_directory( $cache ) ) {
-			throw new Exception( 'Invalid cache directory: ' . $cache );
 		}
 		parent::setCache( $cache );
 	}
