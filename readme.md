@@ -29,7 +29,9 @@ This plugin provides a global function `vip_twig_environment()` which can be use
 to access the plugin's instance of `Twig_Environment` which is available once
 `after_setup_theme` has fired. In other words, you can render a template via:
 
-`echo vip_twig_environment()->render( 'views/index.html.twig' ); // xss ok`
+```php
+echo vip_twig_environment()->render( 'views/index.html.twig' ); // xss ok
+```
 
 This plugin uses subclasses of `Twig_Environment` and `Twig_Loader_Filesystem`
 which have overridden methods to prevent any attempt to compile Twig templates
@@ -38,7 +40,7 @@ on the fly when on WordPress.com VIP or if `DISALLOW_FILE_MODS` is true and
 
 When on a local dev environment where runtime compilation
 is allowed, the Twig templates will by default get written out to
-`get_stylesheet_directory() . '/twig-cache'`.
+a `{stylesheet_directory}/twig-cache`.
 
 The cached PHP files compiled from Twig templates get corresponding names, as opposed
 to cache files being named with an opaque SHA256 hash.

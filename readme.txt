@@ -25,7 +25,9 @@ This plugin provides a global function `vip_twig_environment()` which can be use
 to access the plugin's instance of `Twig_Environment` which is available once
 `after_setup_theme` has fired. In other words, you can render a template via:
 
-`echo vip_twig_environment()->render( 'views/index.html.twig' ); // xss ok`
+```php
+echo vip_twig_environment()->render( 'views/index.html.twig' ); // xss ok
+```
 
 This plugin uses subclasses of `Twig_Environment` and `Twig_Loader_Filesystem`
 which have overridden methods to prevent any attempt to compile Twig templates
