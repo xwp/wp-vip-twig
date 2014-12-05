@@ -2,6 +2,9 @@
 
 namespace VIP_Twig;
 
+/**
+ * Management of the vip-twig plugin.
+ */
 class CLI extends \WP_CLI_Command {
 
 	/**
@@ -67,15 +70,20 @@ class CLI extends \WP_CLI_Command {
 	 * --force
 	 * : Whether to force-compile all files regardless of modified time.
 	 *
+	 * --cleanup
+	 * : Remove cache files that are no longer referenced.
+	 *
 	 * @param array [$args]
 	 * @param array $assoc_args
-	 * @synopsis [--force]
+	 * @synopsis [--force] [--cleanup]
 	 */
 	public function compile( $args, $assoc_args ) {
 		try {
+			unset( $args );
 			$assoc_args = array_merge(
 				array(
 					'force' => false,
+					'cleanup' => false,
 				),
 				$assoc_args
 			);
@@ -121,9 +129,13 @@ class CLI extends \WP_CLI_Command {
 
 			$this->plugin->config['precompilation_required'] = false;
 
+			$previous_cache_files = $this->find_files( $cache_dir, '/\.php$/' );
+			$present_cache_files = array();
+
 			$twig_env = $this->plugin->twig_environment();
 			foreach ( $twig_templates as $twig_template ) {
 				$cache_filename = $twig_env->getCacheFilename( $twig_template );
+				$present_cache_files[] = $cache_filename;
 				if ( ! $assoc_args['force'] && $twig_env->isTemplateFresh( $twig_template, \filemtime( $cache_filename ) ) ) {
 					\WP_CLI::line( 'Skipping since fresh: ' . $twig_template );
 				} else {
@@ -134,7 +146,13 @@ class CLI extends \WP_CLI_Command {
 				}
 			}
 
-			// TODO: Remove any PHP files from cache directory that is no longer referenced
+			if ( $assoc_args['cleanup'] ) {
+				foreach ( $previous_cache_files as $existing_cache_file ) {
+					if ( ! in_array( $existing_cache_file, $present_cache_files ) ) {
+						\WP_CLI::line( 'Cleanup unreferenced Twig cache file: ' . $existing_cache_file );
+					}
+				}
+			}
 
 			\WP_CLI::success( sprintf( 'Compiled %d Twig template(s)', count( $twig_templates ) ) );
 
