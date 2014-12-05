@@ -1,6 +1,7 @@
 <?php
 /**
  * Plugin Name: VIP Twig
+ * Plugin URI: https://github.com/xwp/wp-vip-twig
  * Description: Configuration of Twig for use on WordPress VIP and other similar environments where on-the-fly template compilation on production is not possible.
  * Version: 0.1
  * Author:  Weston Ruter, XWP
