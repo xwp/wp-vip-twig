@@ -63,7 +63,7 @@ class Plugin {
 			),
 			'loader_template_paths' => array(),
 			'vip_plugin_folders' => array( 'plugins' ), // On VIP, you may want to filter the config to add 'acmecorp-plugins'
-			'charset' => ( $this->is_wpcom_vip() ? 'latin1' : 'UTF-8' ),
+			'charset' => get_bloginfo( 'charset' ),
 		);
 		if ( get_template() !== get_stylesheet() ) {
 			$default_config['loader_template_paths'][] = trailingslashit( get_stylesheet_directory() );
