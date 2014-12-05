@@ -350,28 +350,4 @@ class Plugin {
 		return compact( 'dir_url', 'dir_path', 'dir_basename' );
 	}
 
-	/**
-	 * Handle notice messages according to the appropriate context (WP-CLI or the WP Admin)
-	 *
-	 * @param string $message
-	 * @param bool $is_warning
-	 * @return void
-	 */
-	public static function notice( $message, $is_warning = true ) {
-		if ( defined( '\WP_CLI' ) ) {
-			$message = strip_tags( $message );
-			if ( $is_warning ) {
-				\WP_CLI::warning( $message );
-			} else {
-				\WP_CLI::success( $message );
-			}
-		} else {
-			\add_action( 'admin_notices', function () use ( $message, $is_warning ) {
-				$class_name   = empty( $notice['is_error'] ) ? 'updated' : 'error';
-				$html_message = sprintf( '<div class="%s">%s</div>', esc_attr( $class_name ), wpautop( $notice['message'] ) );
-				echo wp_kses_post( $html_message );
-			} );
-		}
-	}
-
 }
