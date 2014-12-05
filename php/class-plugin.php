@@ -103,8 +103,6 @@ class Plugin {
 		}
 
 		// @todo $this->twig_environment->getExtension( 'core' )->setEscaper( 'kses', 'wp_kses' );
-
-		// @todo WP-CLI command which iterates over all *.twig files in $this->config['loader_template_paths']
 	}
 
 	/**
