@@ -153,7 +153,9 @@ class CLI extends \WP_CLI_Command {
 				foreach ( $previous_cache_files as $existing_cache_file ) {
 					if ( ! in_array( $existing_cache_file, $present_cache_files ) ) {
 						\WP_CLI::line( 'Cleanup unreferenced Twig cache file: ' . $existing_cache_file );
+						// @codingStandardsIgnoreStart
 						unlink( $existing_cache_file );
+						// @codingStandardsIgnoreEnd
 					}
 				}
 			}
