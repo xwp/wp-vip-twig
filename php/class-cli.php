@@ -27,11 +27,23 @@ class CLI extends \WP_CLI_Command {
 	/**
 	 * Re-compile all *.twig templates located on the plugin's loader_template_paths.
 	 *
+	 * ## OPTIONS
+	 *
+	 * --force
+	 * : Whether to force-compile all files regardless of modified time.
+	 *
 	 * @param array [$args]
 	 * @param array $assoc_args
+	 * @synopsis [--force]
 	 */
 	public function compile( $args, $assoc_args ) {
 		try {
+			$assoc_args = array_merge(
+				array(
+					'force' => false,
+				),
+				$assoc_args
+			);
 
 			if ( empty( $this->plugin->config['loader_template_paths'] ) ) {
 				throw new Exception( 'No loader_template_paths config supplied.' );
@@ -67,23 +79,30 @@ class CLI extends \WP_CLI_Command {
 			}
 			$twig_templates = array_unique( $twig_templates );
 
-			\WP_CLI::line( 'Clear Twig cache' );
-			$this->plugin->twig_environment()->clearCacheFiles(); // TODO: Remove directories too
-
-			\WP_CLI::line( 'Cache directory: ' . $cache_dir );
+			if ( $assoc_args['force'] ) {
+				\WP_CLI::line( 'Clear Twig cache' );
+				$this->plugin->twig_environment()->clearCacheFiles(); // TODO: Remove directories too
+				// TODO: do a cleanup phase after this instead, to remove any PHP file not found
+			}
 
 			$this->plugin->config['precompilation_required'] = false;
 
 			$twig_env = $this->plugin->twig_environment();
 			foreach ( $twig_templates as $twig_template ) {
 				$cache_filename = $twig_env->getCacheFilename( $twig_template );
-				\WP_CLI::line( 'Compiling: ' . $twig_template );
-				$source = $twig_env->compileSource( $twig_env->getLoader()->getSource( $twig_template ), $twig_template );
-				\WP_CLI::line( 'Writing: {cache_dir}' . str_replace( $cache_dir, '', $cache_filename ) );
-				$twig_env->writeCacheFile( $cache_filename, $source );
+				if ( ! $assoc_args['force'] && $twig_env->isTemplateFresh( $twig_template, \filemtime( $cache_filename ) ) ) {
+					\WP_CLI::line( 'Skipping since fresh: ' . $twig_template );
+				} else {
+					\WP_CLI::line( 'Compiling: ' . $twig_template );
+					$source = $twig_env->compileSource( $twig_env->getLoader()->getSource( $twig_template ), $twig_template );
+					\WP_CLI::line( 'Writing: {cache_dir}' . str_replace( $cache_dir, '', $cache_filename ) );
+					$twig_env->writeCacheFile( $cache_filename, $source );
+				}
 			}
 
-			\WP_CLI::success( sprintf( 'Compile %d Twig templates', count( $twig_templates ) ) );
+			// TODO: Remove any PHP files from cache directory that is no longer referenced
+
+			\WP_CLI::success( sprintf( 'Compiled %d Twig template(s)', count( $twig_templates ) ) );
 
 		} catch ( \Exception $e ) {
 			\WP_CLI::error( sprintf( '%s: %s', get_class( $e ), $e->getMessage() ) );
