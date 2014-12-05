@@ -96,7 +96,10 @@ class CLI extends \WP_CLI_Command {
 			}
 			$cache_dir = $this->plugin->config['environment_options']['cache'];
 			if ( ! file_exists( $cache_dir ) ) {
-				if ( mkdir( $cache_dir ) ) {
+				// @codingStandardsIgnoreStart
+				$mkdir_success = mkdir( $cache_dir );
+				// @codingStandardsIgnoreEnd
+				if ( $mkdir_success ) {
 					\WP_CLI::line( 'Creating cache directory: ' . $cache_dir );
 				} else {
 					throw new Exception( 'Unable to create cache directory: ' . $cache_dir );
