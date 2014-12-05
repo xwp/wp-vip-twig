@@ -33,14 +33,6 @@ class CLI extends \WP_CLI_Command {
 	public function compile( $args, $assoc_args ) {
 		try {
 
-			// TODO: WP-CLI should be doing this by default when --debug is provided
-			register_shutdown_function( function () {
-				$last_error = error_get_last();
-				if ( ! empty( $last_error ) ) {
-					\WP_CLI::error( sprintf( '%s (type: %d, line: %d, file: %s)', $last_error['message'], $last_error['type'], $last_error['line'], $last_error['file'] ) );
-				}
-			} );
-
 			if ( empty( $this->plugin->config['loader_template_paths'] ) ) {
 				throw new Exception( 'No loader_template_paths config supplied.' );
 			}

@@ -74,6 +74,16 @@ class Plugin {
 		$this->config = array_merge( $default_config, $config );
 
 		add_action( 'after_setup_theme', array( $this, 'init' ) );
+
+		// TODO: WP-CLI should be doing this by default when --debug is provided
+		if ( defined( '\WP_CLI' ) && \WP_CLI ) {
+			register_shutdown_function( function () {
+				$last_error = error_get_last();
+				if ( ! empty( $last_error ) ) {
+					\WP_CLI::error( sprintf( '%s (type: %d, line: %d, file: %s)', $last_error['message'], $last_error['type'], $last_error['line'], $last_error['file'] ) );
+				}
+			} );
+		}
 	}
 
 	/**
