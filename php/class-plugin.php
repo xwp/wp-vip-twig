@@ -3,7 +3,7 @@
 namespace VIP_Twig;
 
 /**
- *
+ * Main plugin bootstrap file.
  */
 class Plugin {
 
