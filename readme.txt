@@ -55,10 +55,12 @@ directory (stylesheet directory), and the parent theme's directory
 (template directory). You may override this behavior or add more Twig template
 paths to search via the config filter, for instance within the context of a plugin:
 
-`add_filter( 'vip_twig_config', function ( $config ) {
+```php
+add_filter( 'vip_twig_config', function ( $config ) {
 	array_unshift( $config['loader_template_paths'], plugin_dir_path( __FILE__ ) );
 	return $config;
-});`
+});
+```
 
 In the context of WordPress.com VIP, the intention is that the PHP files generated
 from Twig templates would get committed to SVN and code reviewed like any other
