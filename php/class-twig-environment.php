@@ -76,7 +76,6 @@ class Twig_Environment extends \Twig_Environment {
 		return $this->templateClassPrefix . preg_replace( '/\W/', '_', $name ) . '_' . $short_hash . (null === $index ? '' : '_'.$index);
 	}
 
-
 	/**
 	 * Loads a template by name.
 	 *

@@ -91,7 +91,7 @@ class Plugin {
 	 */
 	function init() {
 		spl_autoload_register( array( $this, 'autoload' ) );
-		$this->apply_config_filters();
+		$this->config = \apply_filters( 'vip_twig_config', $this->config, $this );
 		$this->validate_config();
 
 		$this->twig_loader = new Twig_Loader( $this, $this->config['loader_template_paths'] );
@@ -138,14 +138,6 @@ class Plugin {
 	 */
 	function is_wp_debug() {
 		return ( defined( '\WP_DEBUG' ) && \WP_DEBUG );
-	}
-
-	/**
-	 * Apply 'vip_twig_plugin_config' filters for $this->config and validate config for environment.
-	 */
-	function apply_config_filters() {
-		$filter_name = $this->prefix( 'plugin_config' );
-		$this->config = \apply_filters( $filter_name, $this->config, $this );
 	}
 
 	/**
@@ -275,40 +267,6 @@ class Plugin {
 			$reflection = new \ReflectionObject( $this );
 		}
 		return $reflection;
-	}
-
-	/**
-	 * Compute the prefix from the plugin class's namespace.
-	 *
-	 * > FooBarBaz\Example_Test => 'foobarbaz_example_test'
-	 *
-	 * @return string
-	 */
-	function get_prefix_from_namespace() {
-		return strtolower( str_replace( '\\', '_', $this->get_object_reflection()->getNamespaceName() ) );
-	}
-
-	/**
-	 * Prepend $stem with $this->prefix followed by $delimiter
-	 *
-	 * @param string $stem
-	 * @param string $delimiter
-	 * @return string
-	 */
-	function prefix( $stem = '', $delimiter = '_' ) {
-		return $this->get_prefix_from_namespace() . $delimiter . $stem;
-	}
-
-	/**
-	 * Derive a WP-CLI command name from the class's namespace.
-	 *
-	 * FooBarBaz\Example_Test => 'foobarbaz example-test'
-	 *
-	 * @return string
-	 */
-	function get_cli_command_name() {
-		$parts = explode( '\\', str_replace( '_', '-', strtolower( $this->get_object_reflection()->getNamespaceName() ) ) );
-		return implode( ' ', $parts );
 	}
 
 	/**
