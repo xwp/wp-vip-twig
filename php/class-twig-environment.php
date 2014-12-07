@@ -45,6 +45,19 @@ class Twig_Environment extends \Twig_Environment {
 	}
 
 	/**
+	 * Prepare a Twig template name for use in cache filename and class name.
+	 *
+	 * @param $name
+	 * @return string
+	 */
+	protected function prepareTemplateName( $name ) {
+		$name = preg_replace( '#//+#', '/', $name );
+		$name = preg_replace( '#\.+/#', '', $name ); // @todo better scrub of relative paths? Can relative paths even be used?
+		$name .= '.' . substr( hash( 'sha256', $this->getLoader()->getCacheKey( $name ) ), 0, 6 ); // @todo This probably is not necessary
+		return $name;
+	}
+
+	/**
 	 * Gets the cache filename for a given template.
 	 *
 	 * @param string $name The template name
@@ -55,12 +68,9 @@ class Twig_Environment extends \Twig_Environment {
 		if ( false === $this->cache ) {
 			return false;
 		}
-		$cache_filename = $name;
-		$cache_filename = preg_replace( '#//+#', '/', $cache_filename );
-		$cache_filename = preg_replace( '#\.+/#', '', $cache_filename ); // @todo better scrub of relative paths? Can relative paths even be used?
-		$cache_filename .= '.' . substr( hash( 'sha256', $this->getLoader()->getCacheKey( $name ) ), 0, 6 ); // @todo This probably is not necessary
-		$cache_filename .= '.php';
-		return $this->getCache() . '/' . $cache_filename;
+		$cache_filename = $this->prepareTemplateName( $name ) . '.php';
+		$cache_filename = $this->getCache() . '/' . $cache_filename;
+		return $cache_filename;
 	}
 
 	/**
@@ -72,8 +82,9 @@ class Twig_Environment extends \Twig_Environment {
 	 * @return string The template class name
 	 */
 	public function getTemplateClass($name, $index = null) {
-		$short_hash = substr( hash( 'sha256', $this->getLoader()->getCacheKey( $name ) ), 0, 6 );
-		return $this->templateClassPrefix . preg_replace( '/\W/', '_', $name ) . '_' . $short_hash . (null === $index ? '' : '_'.$index);
+		$name = $this->prepareTemplateName( $name );
+		$name = preg_replace( '/\W/', '_', $name );
+		return $this->templateClassPrefix . $name . (null === $index ? '' : '_'.$index);
 	}
 
 	/**
