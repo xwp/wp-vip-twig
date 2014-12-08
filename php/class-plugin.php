@@ -73,7 +73,7 @@ class Plugin {
 
 		$this->config = array_merge( $default_config, $config );
 
-		add_action( 'after_setup_theme', array( $this, 'init' ) );
+		add_action( 'after_setup_theme', array( $this, 'init' ), 9 );
 
 		// TODO: WP-CLI should be doing this by default when --debug is provided
 		if ( defined( '\WP_CLI' ) && \WP_CLI ) {

@@ -18,8 +18,12 @@ if ( version_compare( phpversion(), '5.3', '>=' ) ) {
 
 	/**
 	 * @return \VIP_Twig\Twig_Environment
+	 * @throws Exception
 	 */
 	function vip_twig_environment() {
+		if ( ! did_action( 'after_setup_theme' ) ) {
+			throw new Exception( 'vip_twig_environment() called before after_setup_theme action' );
+		}
 		return $GLOBALS['vip_twig_plugin']->twig_environment();
 	};
 } else {
