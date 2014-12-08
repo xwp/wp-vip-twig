@@ -60,6 +60,7 @@ class Plugin {
 				'debug' => $this->is_wp_debug(),
 				'auto_reload' => ( $this->is_wp_debug() || ! $this->is_disallow_file_mods() ),
 				'strict_variables' => true,
+				'autoescape' => 'html',
 			),
 			'loader_template_paths' => array(),
 			'vip_plugin_folders' => array( 'plugins' ), // On VIP, you may want to filter the config to add 'acmecorp-plugins'
