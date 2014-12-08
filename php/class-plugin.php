@@ -58,12 +58,12 @@ class Plugin {
 			'environment_options' => array(
 				'cache' => trailingslashit( get_stylesheet_directory() ) . 'twig-cache',
 				'debug' => $this->is_wp_debug(),
-				'auto_reload' => ( $this->is_wp_debug() && ! $this->is_disallow_file_mods() ),
+				'auto_reload' => ( $this->is_wp_debug() || ! $this->is_disallow_file_mods() ),
 				'strict_variables' => true,
 			),
 			'loader_template_paths' => array(),
 			'vip_plugin_folders' => array( 'plugins' ), // On VIP, you may want to filter the config to add 'acmecorp-plugins'
-			'charset' => get_bloginfo( 'charset' ),
+			'charset' => get_bloginfo( 'charset' ), // TODO: VIP should always by Latin1
 		);
 		if ( get_template() !== get_stylesheet() ) {
 			$default_config['loader_template_paths'][] = trailingslashit( get_stylesheet_directory() );
@@ -145,7 +145,7 @@ class Plugin {
 	 */
 	function validate_config() {
 		if ( $this->is_wpcom_vip_prod() || ( $this->is_wpcom_vip() && ! $this->is_wp_debug() ) ) {
-			if ( empty( $this->config['precompilation_required'] ) && $this->is_disallow_file_mods() ) {
+			if ( empty( $this->config['precompilation_required'] ) && $this->is_disallow_file_mods() && ! $this->is_wp_debug() ) {
 				trigger_error( 'VIP Twig precompilation_required=true is required on VIP', E_USER_NOTICE );
 				$this->config['precompilation_required'] = true;
 			}
@@ -154,7 +154,7 @@ class Plugin {
 				$this->config['debug'] = false;
 			}
 		}
-		if ( ! empty( $this->config['environment_options']['auto_reload'] ) && $this->is_disallow_file_mods() ) {
+		if ( ! empty( $this->config['environment_options']['auto_reload'] ) && $this->is_disallow_file_mods() && ! $this->is_wp_debug() ) {
 			trigger_error( 'Twig auto_reload=false not available since DISALLOW_FILE_MODS', E_USER_WARNING );
 			$this->config['environment_options']['auto_reload'] = false;
 		}
