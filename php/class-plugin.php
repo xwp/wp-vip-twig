@@ -105,6 +105,7 @@ class Plugin {
 		if ( $force_disable_cache ) {
 			// Force the cache off when we're in debug mode and precompilation is not required, and we're not using WP-CLI
 			$this->config['environment_options']['cache'] = false;
+			$this->config['environment_options']['auto_load'] = true;
 		}
 		$this->validate_config();
 
@@ -158,17 +159,17 @@ class Plugin {
 	 * @throws Exception
 	 */
 	function validate_config() {
-		if ( $this->is_wpcom_vip_prod() || ( $this->is_wpcom_vip() && ! $this->is_wp_debug() ) ) {
-			if ( empty( $this->config['precompilation_required'] ) && $this->is_disallow_file_mods() && ! $this->is_wp_debug() ) {
+		if ( $this->is_wpcom_vip_prod() || ( $this->is_wpcom_vip() && ! $this->config['environment_options']['debug'] ) ) {
+			if ( empty( $this->config['precompilation_required'] ) && $this->is_disallow_file_mods() && empty( $this->config['environment_options']['debug'] ) ) {
 				trigger_error( 'VIP Twig precompilation_required=true is required on VIP', E_USER_NOTICE );
 				$this->config['precompilation_required'] = true;
 			}
-			if ( ! empty( $this->config['debug'] ) ) {
+			if ( ! empty( $this->config['environment_options']['debug'] ) ) {
 				trigger_error( 'Twig debug=false is required on VIP', E_USER_WARNING );
-				$this->config['debug'] = false;
+				$this->config['environment_options']['debug'] = false;
 			}
 		}
-		if ( ! empty( $this->config['environment_options']['auto_reload'] ) && $this->is_disallow_file_mods() && ! $this->is_wp_debug() ) {
+		if ( ! empty( $this->config['environment_options']['auto_reload'] ) && $this->is_disallow_file_mods() && empty( $this->config['environment_options']['debug'] ) ) {
 			trigger_error( 'Twig auto_reload=false not available since DISALLOW_FILE_MODS', E_USER_WARNING );
 			$this->config['environment_options']['auto_reload'] = false;
 		}
