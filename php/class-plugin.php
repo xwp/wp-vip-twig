@@ -93,7 +93,17 @@ class Plugin {
 	function init() {
 		spl_autoload_register( array( $this, 'autoload' ) );
 		$this->config = \apply_filters( 'vip_twig_config', $this->config, $this );
-		if ( ! empty( $this->config['debug'] ) && ! empty( $this->config['environment_options']['cache'] ) && ! $this->is_wp_cli() ) {
+		$force_disable_cache = (
+			empty( $this->config['precompilation_required'] )
+			&&
+			! empty( $this->config['environment_options']['debug'] )
+			&&
+			! empty( $this->config['environment_options']['cache'] )
+			&&
+			! $this->is_wp_cli()
+		);
+		if ( $force_disable_cache ) {
+			// Force the cache off when we're in debug mode and precompilation is not required, and we're not using WP-CLI
 			$this->config['environment_options']['cache'] = false;
 		}
 		$this->validate_config();
