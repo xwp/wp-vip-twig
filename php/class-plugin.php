@@ -96,7 +96,6 @@ class Plugin {
 		if ( ! empty( $this->config['debug'] ) && ! empty( $this->config['environment_options']['cache'] ) && ! $this->is_wp_cli() ) {
 			$this->config['environment_options']['cache'] = false;
 		}
-		$this->config['environment_options']['cache'] = false;
 		$this->validate_config();
 
 		$this->twig_loader = new Twig_Loader( $this, $this->config['loader_template_paths'] );
