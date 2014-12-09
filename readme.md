@@ -56,7 +56,7 @@ into their corresponding PHP cache files at once so that they can be committed.
 As such, a great `pre-commit` hook for a theme using this plugin would be:
 `wp vip-twig compile && git add -A twig-cache`
 
-By default the Twig loader will look for for templates in the child theme's
+By default the Twig loader will look for templates in the child theme's
 directory (stylesheet directory), and the parent theme's directory
 (template directory). You may override this behavior or add more Twig template
 paths to search via the config filter, for instance within the context of a plugin:
@@ -68,13 +68,19 @@ add_filter( 'vip_twig_config', function ( $config ) {
 });
 ```
 
+This plugin also enforces that Twig templates only be loaded from the stylesheet
+directory, the template directory, the VIP shared plugins directory, or from an
+organization's specific plugins folder. This prevents including templates from
+other clients' codebases.
+
 In the context of WordPress.com VIP, the intention is that the PHP files generated
 from Twig templates would get committed to SVN and code reviewed like any other
 code being submitted to VIP.
 
 PHP 5.3+ is required.
 
-**Development of this plugin is done [on GitHub](https://github.com/xwp/wp-vip-twig). Pull requests welcome. Please see any [issues](https://github.com/xwp/wp-vip-twig/issues) reported.**
+**Development of this plugin is done [on GitHub](https://github.com/xwp/wp-vip-twig).
+Pull requests welcome. Please see any [issues](https://github.com/xwp/wp-vip-twig/issues) reported.**
 
 ## Changelog ##
 
