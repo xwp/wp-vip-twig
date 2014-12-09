@@ -112,6 +112,10 @@ class Plugin {
 		$this->twig_loader = new Twig_Loader( $this, $this->config['loader_template_paths'] );
 		$this->twig_environment = new Twig_Environment( $this, $this->twig_loader, $this->config['environment_options'] );
 
+		if ( ! empty( $this->config['environment_options']['debug'] ) ) {
+			$this->twig_environment->addExtension( new \Twig_Extension_Debug() );
+		}
+
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			CLI::$plugin_instance = $this;
 			\WP_CLI::add_command( $this->slug, __NAMESPACE__ . '\\CLI' );
