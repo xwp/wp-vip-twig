@@ -80,7 +80,7 @@ class Plugin {
 		if ( defined( '\WP_CLI' ) && \WP_CLI ) {
 			register_shutdown_function( function () {
 				$last_error = error_get_last();
-				if ( ! empty( $last_error ) ) {
+				if ( ! empty( $last_error ) && in_array( $last_error['type'], array( \E_ERROR, \E_USER_ERROR, \E_RECOVERABLE_ERROR ) ) ) {
 					\WP_CLI::error( sprintf( '%s (type: %d, line: %d, file: %s)', $last_error['message'], $last_error['type'], $last_error['line'], $last_error['file'] ) );
 				}
 			} );
