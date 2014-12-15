@@ -9,6 +9,7 @@
 	<php>
 		<const name="WP_TEST_VIP_QUICKSTART_ACTIVATED_PLUGINS" value="jetpack/jetpack.php,media-explorer/media-explorer.php,writing-helper/writing-helper.php,mrss/mrss.php,wordpress-importer/wordpress-importer.php,keyring/keyring.php,polldaddy/polldaddy.php" />
 		<const name="WP_TEST_ACTIVATED_PLUGINS" value="" /> <!-- this list is used if not on VIP Quickstart -->
+		<const name="WP_TEST_VIP_TWIG" value="true" />
 		<const name="WP_TEST_VIP_TWIG_THEME_ROOT" value="tests/data" />
 		<const name="WP_TEST_VIP_TWIG_STYLESHEET" value="stylesheet" />
 		<const name="WP_TEST_VIP_TWIG_TEMPLATE" value="template" />

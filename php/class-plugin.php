@@ -52,7 +52,9 @@ class Plugin {
 		$this->dir_path = $location['dir_path'];
 		$this->dir_url = $location['dir_url'];
 
-		$this->add_unit_test_filters();
+		if ( defined( '\WP_TEST_VIP_TWIG' ) ) {
+			$this->add_unit_test_filters();
+		}
 
 		$default_config = array(
 			'precompilation_required' => ( $this->is_wpcom_vip_prod() || ( $this->is_disallow_file_mods() && ! $this->is_wp_debug() ) ),
@@ -95,6 +97,11 @@ class Plugin {
 	 */
 	function add_unit_test_filters() {
 		$plugin = $this;
+		add_filter( 'vip_twig_config', function ( $config ) {
+			// Make sure that we write to the file system
+			$config['environment_options']['debug'] = false;
+			return $config;
+		} );
 		if ( defined( '\WP_TEST_VIP_TWIG_THEME_ROOT' ) ) {
 			add_filter( 'theme_root', function () use ( $plugin ) {
 				return trailingslashit( $plugin->dir_path ) . \WP_TEST_VIP_TWIG_THEME_ROOT;
