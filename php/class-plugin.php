@@ -52,6 +52,8 @@ class Plugin {
 		$this->dir_path = $location['dir_path'];
 		$this->dir_url = $location['dir_url'];
 
+		$this->add_unit_test_filters();
+
 		$default_config = array(
 			'precompilation_required' => ( $this->is_wpcom_vip_prod() || ( $this->is_disallow_file_mods() && ! $this->is_wp_debug() ) ),
 			'twig_lib_path' => $this->dir_path . '/vendor/twig/lib',
@@ -66,10 +68,11 @@ class Plugin {
 			'vip_plugin_folders' => array( 'plugins' ), // On VIP, you may want to filter the config to add 'acmecorp-plugins'
 			'charset' => get_bloginfo( 'charset' ), // TODO: VIP should always by Latin1
 		);
+
+		$default_config['loader_template_paths'][] = trailingslashit( get_stylesheet_directory() );
 		if ( get_template() !== get_stylesheet() ) {
-			$default_config['loader_template_paths'][] = trailingslashit( get_stylesheet_directory() );
+			$default_config['loader_template_paths'][] = trailingslashit( get_template_directory() );
 		}
-		$default_config['loader_template_paths'][] = trailingslashit( get_template_directory() );
 		// Plugins will probably prepend loader_template_paths with more paths
 
 		$this->config = array_merge( $default_config, $config );
@@ -83,6 +86,28 @@ class Plugin {
 				if ( ! empty( $last_error ) && in_array( $last_error['type'], array( \E_ERROR, \E_USER_ERROR, \E_RECOVERABLE_ERROR ) ) ) {
 					\WP_CLI::error( sprintf( '%s (type: %d, line: %d, file: %s)', $last_error['message'], $last_error['type'], $last_error['line'], $last_error['file'] ) );
 				}
+			} );
+		}
+	}
+
+	/**
+	 * Add filters for running in a unit test context.
+	 */
+	function add_unit_test_filters() {
+		$plugin = $this;
+		if ( defined( '\WP_TEST_VIP_TWIG_THEME_ROOT' ) ) {
+			add_filter( 'theme_root', function () use ( $plugin ) {
+				return trailingslashit( $plugin->dir_path ) . \WP_TEST_VIP_TWIG_THEME_ROOT;
+			} );
+		}
+		if ( defined( '\WP_TEST_VIP_TWIG_STYLESHEET' ) ) {
+			add_filter( 'option_stylesheet', function () {
+				return \WP_TEST_VIP_TWIG_STYLESHEET;
+			} );
+		}
+		if ( defined( '\WP_TEST_VIP_TWIG_TEMPLATE' ) ) {
+			add_filter( 'option_template', function () {
+				return \WP_TEST_VIP_TWIG_TEMPLATE;
 			} );
 		}
 	}
