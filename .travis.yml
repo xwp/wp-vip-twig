@@ -10,9 +10,7 @@ node_js:
     - 0.10
 
 env:
-    - WP_VERSION=latest WP_MULTISITE=0
     - WP_VERSION=latest WP_MULTISITE=1
-    - WP_VERSION=4.0 WP_MULTISITE=0
     - WP_VERSION=4.0 WP_MULTISITE=1
 
 before_script:
