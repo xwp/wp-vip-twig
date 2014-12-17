@@ -1,0 +1,19 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Story{% endblock title %}
+
+{% set content %}
+	<p>This is a story!</p>
+	<p>that shouldn't allow any</p>
+	<p>XSS attacks</p>
+	<script>
+		var hello = '';
+	</script>
+	<p>at least we hope so!</p>
+{% endset %}
+
+{% block main %}
+<main>
+	{{ content|default('')|raw }}
+</main>
+{% endblock main %}

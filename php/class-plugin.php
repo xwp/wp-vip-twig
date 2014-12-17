@@ -66,6 +66,7 @@ class Plugin {
 				'strict_variables' => true,
 				'autoescape' => 'html',
 			),
+			'add_wp_kses_post_filter' => true,
 			'loader_template_paths' => array(),
 			'vip_plugin_folders' => array( 'plugins' ), // On VIP, you may want to filter the config to add 'acmecorp-plugins'
 			'charset' => get_bloginfo( 'charset' ), // TODO: VIP should always by Latin1
@@ -153,7 +154,23 @@ class Plugin {
 			\WP_CLI::add_command( $this->slug, __NAMESPACE__ . '\\CLI' );
 		}
 
-		// @todo $this->twig_environment->getExtension( 'core' )->setEscaper( 'kses', 'wp_kses' );
+		$this->add_twig_filters();
+	}
+
+	/**
+	 * Add filters to Twig
+	 */
+	function add_twig_filters() {
+		if ( $this->config['add_wp_kses_post_filter'] ) {
+			$filter = new \Twig_SimpleFilter(
+				'wp_kses_post',
+				function ( $string ) {
+					return wp_kses( $string, wp_kses_allowed_html( 'post' ) );
+				},
+				array( 'is_safe' => array( 'html' ) )
+			);
+			$this->twig_environment->addFilter( $filter );
+		}
 	}
 
 	/**

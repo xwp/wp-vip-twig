@@ -45,4 +45,16 @@ class BasicsTest extends \WP_UnitTestCase {
 		}
 	}
 
+	function test_wp_kses_post_custom_filter() {
+		vip_twig_environment()->clearCacheFiles();
+		$this->assertEquals( 0, count( glob( vip_twig_environment()->getCache() . '/*.php' ) ) );
+
+		$raw_filter = vip_twig_environment()->render( 'wp-kses-filter/raw.html.twig' );
+		$this->assertTrue( 0 !== preg_match_all( '/<\/*script>/', $raw_filter ) );
+
+		$wp_kses_filter = vip_twig_environment()->render( 'wp-kses-filter/wpkses.html.twig' );
+		$this->assertTrue( 1 !== preg_match_all( '/<\/*script>/', $wp_kses_filter ) );
+
+	}
+
 }
