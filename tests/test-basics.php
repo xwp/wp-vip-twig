@@ -10,6 +10,7 @@ class BasicsTest extends \WP_UnitTestCase {
 			mkdir( vip_twig_environment()->getCache() );
 			// @codingStandardsIgnoreEnd
 		}
+		vip_twig_environment()->clearCacheFiles();
 		parent::setUp();
 	}
 
@@ -27,7 +28,6 @@ class BasicsTest extends \WP_UnitTestCase {
 	}
 
 	function test_render() {
-		vip_twig_environment()->clearCacheFiles();
 		$this->assertEquals( 0, count( glob( vip_twig_environment()->getCache() . '/*.php' ) ) );
 
 		$base_render = vip_twig_environment()->render( 'base.html.twig' );
@@ -45,8 +45,36 @@ class BasicsTest extends \WP_UnitTestCase {
 		}
 	}
 
+	function test_render_template_name_filter() {
+		$test = $this;
+		$filter_name = function ( $name, $context ) use ( $test ) {
+			$test->assertEquals( 'base.html.twig', $name );
+			$test->assertEquals( 'FOOD HEADING', $context['header_h1'] );
+			return 'index.html.twig';
+		};
+		add_filter( 'vip_twig_render_template_name', $filter_name, 10, 2 );
+		$render = vip_twig_environment()->render( 'base.html.twig', array( 'header_h1' => 'FOOD HEADING' ) );
+		$this->assertContains( '<title>Index</title>', $render );
+		$this->assertContains( '<h1>FOOD HEADING</h1>', $render );
+		remove_filter( 'vip_twig_render_template_name', $filter_name, 10 );
+	}
+
+	function test_render_template_context_filter() {
+		$test = $this;
+		$filter_context = function ( $context, $name ) use ( $test ) {
+			$test->assertEquals( 'index.html.twig', $name );
+			$test->assertEquals( 'FOOD HEADING', $context['header_h1'] );
+			$context['header_h1'] = 'BARD HEADING';
+			return $context;
+		};
+		add_filter( 'vip_twig_render_template_context', $filter_context, 10, 2 );
+		$render = vip_twig_environment()->render( 'index.html.twig', array( 'header_h1' => 'FOOD HEADING' ) );
+		$this->assertContains( '<title>Index</title>', $render );
+		$this->assertContains( '<h1>BARD HEADING</h1>', $render );
+		remove_filter( 'vip_twig_render_template_context', $filter_context, 10 );
+	}
+
 	function test_wp_kses_post_custom_filter() {
-		vip_twig_environment()->clearCacheFiles();
 		$this->assertEquals( 0, count( glob( vip_twig_environment()->getCache() . '/*.php' ) ) );
 
 		$raw_filter = vip_twig_environment()->render( 'wp-kses-filter/raw.html.twig' );
