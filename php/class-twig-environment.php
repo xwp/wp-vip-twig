@@ -81,10 +81,43 @@ class Twig_Environment extends \Twig_Environment {
 	 *
 	 * @return string The template class name
 	 */
-	public function getTemplateClass($name, $index = null) {
+	public function getTemplateClass( $name, $index = null ) {
 		$name = $this->prepareTemplateName( $name );
 		$name = preg_replace( '/\W/', '_', $name );
 		return $this->templateClassPrefix . $name . (null === $index ? '' : '_'.$index);
+	}
+
+	/**
+	 * Renders a template, with the template name and context being filterable.
+	 *
+	 * @param string $name    The template name
+	 * @param array  $context An array of parameters to pass to the template
+	 *
+	 * @return string The rendered template
+	 *
+	 * @throws \Twig_Error_Loader  When the template cannot be found
+	 * @throws \Twig_Error_Syntax  When an error occurred during compilation
+	 * @throws \Twig_Error_Runtime When an error occurred during rendering
+	 */
+	public function render( $name, array $context = array() ) {
+
+		/**
+		 * Filter the template $name used to render the $context.
+		 *
+		 * @param array $context data
+		 * @param string $name of the template
+		 */
+		$name = apply_filters( 'vip_twig_render_template_name', $name, $context );
+
+		/**
+		 * Filter the $context passed when rendering template $name.
+		 *
+		 * @param array $context data
+		 * @param string $name of the template
+		 */
+		$context = apply_filters( 'vip_twig_render_template_context', $context, $name );
+
+		return parent::render( $name, $context );
 	}
 
 	/**

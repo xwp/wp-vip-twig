@@ -8,7 +8,7 @@
 	<body>
 		{% block header %}
 			<header>
-				<h1>Example Site</h1>
+				<h1>{{ header_h1|default('Example Site') }}</h1>
 			</header>
 		{% endblock header %}
 
