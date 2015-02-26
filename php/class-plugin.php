@@ -145,6 +145,10 @@ class Plugin {
 		$this->twig_loader = new Twig_Loader( $this, $this->config['loader_template_paths'] );
 		$this->twig_environment = new Twig_Environment( $this, $this->twig_loader, $this->config['environment_options'] );
 
+		if ( get_option( 'timezone_string' ) ) {
+			$this->twig_environment->getExtension( 'core' )->setTimezone( get_option( 'timezone_string' ) );
+		}
+
 		if ( ! empty( $this->config['environment_options']['debug'] ) ) {
 			$this->twig_environment->addExtension( new \Twig_Extension_Debug() );
 		}
