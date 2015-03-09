@@ -5,6 +5,9 @@ namespace VIP_Twig;
 class BasicsTest extends \WP_UnitTestCase {
 
 	function setUp() {
+		if ( ! vip_twig_environment()->getCache() ) {
+			throw new \Exception( 'Cache is empty.' );
+		}
 		if ( ! file_exists( vip_twig_environment()->getCache() ) ) {
 			// @codingStandardsIgnoreStart
 			mkdir( vip_twig_environment()->getCache() );
