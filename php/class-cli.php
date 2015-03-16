@@ -130,7 +130,7 @@ class CLI extends \WP_CLI_Command {
 			}
 			$twig_templates = array_unique( $twig_templates );
 
-			$this->plugin->config['precompilation_required'] = false;
+			$this->plugin->config['environment_options']['auto_reload'] = true;
 
 			$previous_cache_files = $this->find_files( $cache_dir, '/\.php$/' );
 			$present_cache_files = array();
