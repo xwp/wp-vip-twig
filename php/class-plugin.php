@@ -202,10 +202,17 @@ class Plugin {
 	function validate_config() {
 		$this->config = \apply_filters( 'vip_twig_config', $this->config, $this );
 
+		// Force auto_reload during WP-CLI so that we can run the compile command
+		if ( $this->is_wp_cli() && ! $this->is_wpcom_vip_prod() ) {
+			$this->config['environment_options']['auto_reload'] = true;
+		}
+
 		$is_cache_not_writable = (
 			! $this->is_wpcom_vip_prod()
 			&&
 			! empty( $this->config['environment_options']['cache'] )
+			&&
+			! empty( $this->config['environment_options']['auto_reload'] )
 			&&
 			// @codingStandardsIgnoreStart
 			! is_writable( $this->config['environment_options']['cache'] )
