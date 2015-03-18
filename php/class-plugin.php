@@ -52,17 +52,17 @@ class Plugin {
 		$this->dir_path = $location['dir_path'];
 		$this->dir_url = $location['dir_url'];
 
-		if ( defined( '\WP_TEST_VIP_TWIG' ) ) {
+		$is_unit_testing = defined( '\WP_TEST_VIP_TWIG' );
+		if ( $is_unit_testing ) {
 			$this->add_unit_test_filters();
 		}
 
 		$default_config = array(
-			'precompilation_required' => ( $this->is_wpcom_vip_prod() || ( $this->is_disallow_file_mods() && ! $this->is_wp_debug() ) ),
 			'twig_lib_path' => $this->dir_path . '/vendor/twig/lib',
 			'environment_options' => array(
 				'cache' => trailingslashit( get_stylesheet_directory() ) . 'twig-cache',
 				'debug' => $this->is_wp_debug(),
-				'auto_reload' => ( $this->is_wp_debug() || ! $this->is_disallow_file_mods() ),
+				'auto_reload' => false, // this will require precompilation; eventually should be ( ! $this->is_wpcom_vip_prod() && ! quickstart_env_is_staging() ), but see <https://github.com/Automattic/vip-quickstart/issues/406>; maybe it should take into account $this->is_wp_debug()
 				'strict_variables' => true,
 				'autoescape' => 'html',
 			),
@@ -71,6 +71,10 @@ class Plugin {
 			'vip_plugin_folders' => array( 'plugins' ), // On VIP, you may want to filter the config to add 'acmecorp-plugins'
 			'charset' => get_bloginfo( 'charset' ), // TODO: VIP should always by Latin1
 		);
+
+		if ( $is_unit_testing ) {
+			$default_config['environment_options']['auto_reload'] = true;
+		}
 
 		$default_config['loader_template_paths'][] = trailingslashit( get_stylesheet_directory() );
 		if ( get_template() !== get_stylesheet() ) {
@@ -87,7 +91,7 @@ class Plugin {
 			register_shutdown_function( function () {
 				$last_error = error_get_last();
 				if ( ! empty( $last_error ) && in_array( $last_error['type'], array( \E_ERROR, \E_USER_ERROR, \E_RECOVERABLE_ERROR ) ) ) {
-					\WP_CLI::error( sprintf( '%s (type: %d, line: %d, file: %s)', $last_error['message'], $last_error['type'], $last_error['line'], $last_error['file'] ) );
+					\WP_CLI::warning( sprintf( '%s (type: %d, line: %d, file: %s)', $last_error['message'], $last_error['type'], $last_error['line'], $last_error['file'] ) );
 				}
 			} );
 		}
@@ -98,11 +102,6 @@ class Plugin {
 	 */
 	function add_unit_test_filters() {
 		$plugin = $this;
-		add_filter( 'vip_twig_config', function ( $config ) {
-			// Make sure that we write to the file system
-			$config['environment_options']['debug'] = false;
-			return $config;
-		} );
 		if ( defined( '\WP_TEST_VIP_TWIG_THEME_ROOT' ) ) {
 			add_filter( 'theme_root', function () use ( $plugin ) {
 				return trailingslashit( $plugin->dir_path ) . \WP_TEST_VIP_TWIG_THEME_ROOT;
@@ -125,21 +124,6 @@ class Plugin {
 	 */
 	function init() {
 		spl_autoload_register( array( $this, 'autoload' ) );
-		$this->config = \apply_filters( 'vip_twig_config', $this->config, $this );
-		$force_disable_cache = (
-			empty( $this->config['precompilation_required'] )
-			&&
-			! empty( $this->config['environment_options']['debug'] )
-			&&
-			! empty( $this->config['environment_options']['cache'] )
-			&&
-			! $this->is_wp_cli()
-		);
-		if ( $force_disable_cache ) {
-			// Force the cache off when we're in debug mode and precompilation is not required, and we're not using WP-CLI
-			$this->config['environment_options']['cache'] = false;
-			$this->config['environment_options']['auto_load'] = true;
-		}
 		$this->validate_config();
 
 		$this->twig_loader = new Twig_Loader( $this, $this->config['loader_template_paths'] );
@@ -216,20 +200,48 @@ class Plugin {
 	 * @throws Exception
 	 */
 	function validate_config() {
-		if ( $this->is_wpcom_vip_prod() || ( $this->is_wpcom_vip() && ! $this->config['environment_options']['debug'] ) ) {
-			if ( empty( $this->config['precompilation_required'] ) && $this->is_disallow_file_mods() && empty( $this->config['environment_options']['debug'] ) ) {
-				trigger_error( 'VIP Twig precompilation_required=true is required on VIP', E_USER_NOTICE );
-				$this->config['precompilation_required'] = true;
+		$this->config = \apply_filters( 'vip_twig_config', $this->config, $this );
+
+		// Force auto_reload during WP-CLI so that we can run the compile command
+		if ( $this->is_wp_cli() && ! $this->is_wpcom_vip_prod() ) {
+			$this->config['environment_options']['auto_reload'] = true;
+		}
+
+		$is_cache_not_writable = (
+			! $this->is_wpcom_vip_prod()
+			&&
+			! empty( $this->config['environment_options']['cache'] )
+			&&
+			! empty( $this->config['environment_options']['auto_reload'] )
+			&&
+			// @codingStandardsIgnoreStart
+			! is_writable( $this->config['environment_options']['cache'] )
+			// @codingStandardsIgnoreEnd
+		);
+		if ( $is_cache_not_writable ) {
+			trigger_error( sprintf( 'twig-cache directory %s is not writable; templates must be compiled before going to production', $this->config['environment_options']['cache'] ), E_USER_WARNING );
+			$this->config['environment_options']['cache'] = false;
+		}
+
+		if ( $this->is_wpcom_vip_prod() ) {
+			if ( empty( $this->config['environment_options']['cache'] ) ) {
+				throw new Exception( 'Twig environment_options cache must be enabled on VIP.' );
+			}
+			if ( ! empty( $this->config['environment_options']['auto_reload'] ) ) {
+				throw new Exception( 'Twig environment_options auto_reload must not be enabled on VIP.' );
 			}
 			if ( ! empty( $this->config['environment_options']['debug'] ) ) {
 				trigger_error( 'Twig debug=false is required on VIP', E_USER_WARNING );
 				$this->config['environment_options']['debug'] = false;
 			}
 		}
-		if ( ! empty( $this->config['environment_options']['auto_reload'] ) && $this->is_disallow_file_mods() && empty( $this->config['environment_options']['debug'] ) ) {
-			trigger_error( 'Twig auto_reload=false not available since DISALLOW_FILE_MODS', E_USER_WARNING );
-			$this->config['environment_options']['auto_reload'] = false;
+
+		// Sanity check: make sure precompilation is required on VIP prod
+		if ( $this->is_wpcom_vip_prod() && ! $this->is_precompilation_required() ) {
+			throw new Exception( 'Twig environment_options auto_reload must not be enabled on VIP.' );
 		}
+
+		// Make sure all of the loader_template_paths are legal
 		foreach ( $this->config['loader_template_paths'] as $template_path ) {
 			if ( file_exists( $template_path ) && ! $this->is_valid_source_directory( $template_path ) ) {
 				throw new Exception( 'Invalid template source directory: ' . $template_path );
@@ -295,7 +307,14 @@ class Plugin {
 	 * @return bool
 	 */
 	function is_precompilation_required() {
-		return ! empty( $this->config['precompilation_required'] );
+		if ( $this->is_wpcom_vip_prod() ) {
+			return true;
+		}
+		return (
+			! empty( $this->config['environment_options']['cache'] )
+			&&
+			empty( $this->config['environment_options']['auto_reload'] )
+		);
 	}
 
 	/**
