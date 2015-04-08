@@ -43,6 +43,11 @@ class Plugin {
 	protected $twig_environment;
 
 	/**
+	 * @var string
+	 */
+	public $not_writable_cache_location;
+
+	/**
 	 * @param array $config
 	 */
 	public function __construct( $config = array() ) {
@@ -219,7 +224,7 @@ class Plugin {
 			// @codingStandardsIgnoreEnd
 		);
 		if ( $is_cache_not_writable ) {
-			trigger_error( sprintf( 'twig-cache directory %s is not writable; templates must be compiled before going to production', $this->config['environment_options']['cache'] ), E_USER_WARNING );
+			$this->not_writable_cache_location = $this->config['environment_options']['cache'];
 			$this->config['environment_options']['cache'] = false;
 		}
 

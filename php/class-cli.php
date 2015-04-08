@@ -92,7 +92,7 @@ class CLI extends \WP_CLI_Command {
 				throw new Exception( 'No loader_template_paths config supplied.' );
 			}
 			if ( empty( $this->plugin->config['environment_options']['cache'] ) ) {
-				throw new Exception( 'No cache config supplied.' );
+				throw new Exception( 'The supplied directory is not writable: ' . $this->plugin->not_writable_cache_location );
 			}
 			$cache_dir = $this->plugin->config['environment_options']['cache'];
 			if ( ! file_exists( $cache_dir ) ) {
