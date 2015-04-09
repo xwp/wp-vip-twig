@@ -77,6 +77,12 @@ class BasicsTest extends \WP_UnitTestCase {
 		remove_filter( 'vip_twig_render_template_context', $filter_context, 10 );
 	}
 
+	function test_render_override_template() {
+		$render = vip_twig_environment()->render( 'override.html.twig' );
+		$this->assertContains( '<title>Stylesheet Override</title>', $render );
+		$this->assertContains( 'Welcome to the stylesheet override page', $render );
+	}
+
 	function test_wp_kses_post_custom_filter() {
 		$this->assertEquals( 0, count( glob( vip_twig_environment()->getCache() . '/*.php' ) ) );
 
