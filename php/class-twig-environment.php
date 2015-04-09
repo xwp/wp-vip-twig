@@ -53,7 +53,6 @@ class Twig_Environment extends \Twig_Environment {
 	protected function prepareTemplateName( $name ) {
 		$name = preg_replace( '#//+#', '/', $name );
 		$name = preg_replace( '#\.+/#', '', $name ); // @todo better scrub of relative paths? Can relative paths even be used?
-		$name .= '.' . substr( hash( 'sha256', $this->getLoader()->getCacheKey( $name ) ), 0, 6 ); // @todo This probably is not necessary
 		return $name;
 	}
 
