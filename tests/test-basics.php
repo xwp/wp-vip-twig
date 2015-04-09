@@ -44,7 +44,7 @@ class BasicsTest extends \WP_UnitTestCase {
 
 		foreach ( $compiled_templates as $compiled_template ) {
 			$compiled_template = basename( $compiled_template );
-			$this->assertTrue( 0 !== preg_match( '#^(index|base)\.html\.twig\.\w+\.php$#', $compiled_template ) );
+			$this->assertTrue( 0 !== preg_match( '#^(index|base)\.html\.twig\.php$#', $compiled_template ) );
 		}
 	}
 
