@@ -43,6 +43,11 @@ class Plugin {
 	protected $twig_environment;
 
 	/**
+	 * @var Render_Caching
+	 */
+	public $render_caching;
+
+	/**
 	 * @var string
 	 */
 	public $not_writable_cache_location;
@@ -64,6 +69,8 @@ class Plugin {
 
 		$default_config = array(
 			'twig_lib_path' => $this->dir_path . '/vendor/twig/lib',
+			'render_cache_ttl' => HOUR_IN_SECONDS, // filter to 0 to disable; immediate invalidation can be done via WP-CLI `wp vip-twig invalidate-render-cache` or the vip_twig_invalidate_render_cache Ajax action
+			'invalidate_render_cache_auth_key' => '', // the required auth_key param in a URL like: https://example.wordpress.com/wp-admin/admin-ajax.php?action=vip_twig_invalidate_render_cache&auth_key=abc123
 			'environment_options' => array(
 				'cache' => trailingslashit( get_stylesheet_directory() ) . 'twig-cache',
 				'debug' => $this->is_wp_debug(),
@@ -133,6 +140,7 @@ class Plugin {
 
 		$this->twig_loader = new Twig_Loader( $this, $this->config['loader_template_paths'] );
 		$this->twig_environment = new Twig_Environment( $this, $this->twig_loader, $this->config['environment_options'] );
+		$this->render_caching = new Render_Caching( $this );
 
 		if ( get_option( 'timezone_string' ) ) {
 			$this->twig_environment->getExtension( 'core' )->setTimezone( get_option( 'timezone_string' ) );
