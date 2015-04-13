@@ -44,7 +44,7 @@ class BasicsTest extends \WP_UnitTestCase {
 
 		foreach ( $compiled_templates as $compiled_template ) {
 			$compiled_template = basename( $compiled_template );
-			$this->assertTrue( 0 !== preg_match( '#^(index|base)\.html\.twig\.\w+\.php$#', $compiled_template ) );
+			$this->assertTrue( 0 !== preg_match( '#^(index|base)\.html\.twig\.php$#', $compiled_template ) );
 		}
 	}
 
@@ -75,6 +75,12 @@ class BasicsTest extends \WP_UnitTestCase {
 		$this->assertContains( '<title>Index</title>', $render );
 		$this->assertContains( '<h1>BARD HEADING</h1>', $render );
 		remove_filter( 'vip_twig_render_template_context', $filter_context, 10 );
+	}
+
+	function test_render_override_template() {
+		$render = vip_twig_environment()->render( 'override.html.twig' );
+		$this->assertContains( '<title>Stylesheet Override</title>', $render );
+		$this->assertContains( 'Welcome to the stylesheet override page', $render );
 	}
 
 	function test_wp_kses_post_custom_filter() {
