@@ -18,16 +18,25 @@ class Twig_Environment extends \Twig_Environment {
 		parent::__construct( $loader, $options );
 	}
 
+	/**
+	 * {@inheritdoc}
+	 */
 	public function enableDebug() {
 		$this->plugin->abort_if_is_wp_vip_env();
 		parent::enableDebug();
 	}
 
+	/**
+	 * {@inheritdoc}
+	 */
 	public function enableAutoReload() {
 		$this->plugin->abort_if_precompilation_required();
 		return parent::enableAutoReload();
 	}
 
+	/**
+	 * {@inheritdoc}
+	 */
 	public function isAutoReload() {
 		if ( $this->plugin->is_precompilation_required() ) {
 			$auto_reload = false;
@@ -37,6 +46,9 @@ class Twig_Environment extends \Twig_Environment {
 		return $auto_reload;
 	}
 
+	/**
+	 * {@inheritdoc}
+	 */
 	public function setCache( $cache ) {
 		if ( ! $cache ) {
 			$this->plugin->abort_if_precompilation_required();
@@ -70,6 +82,17 @@ class Twig_Environment extends \Twig_Environment {
 		$cache_filename = $this->prepareTemplateName( $name ) . '.php';
 		$cache_filename = $this->getCache() . '/' . $cache_filename;
 		return $cache_filename;
+	}
+
+	/**
+	 * {@inheritdoc}
+	 *
+	 * Make method public.
+	 *
+	 * @return Twig_Loader
+	 */
+	public function getLoader() {
+		return parent::getLoader();
 	}
 
 	/**
@@ -147,6 +170,9 @@ class Twig_Environment extends \Twig_Environment {
 		return parent::loadTemplate( $name, $index );
 	}
 
+	/**
+	 * {@inheritdoc}
+	 */
 	public function isTemplateFresh( $name, $time ) {
 		if ( $this->plugin->is_precompilation_required() ) {
 			$fresh = true;
@@ -156,11 +182,17 @@ class Twig_Environment extends \Twig_Environment {
 		return $fresh;
 	}
 
+	/**
+	 * {@inheritdoc}
+	 */
 	public function writeCacheFile( $file, $content ) {
 		$this->plugin->abort_if_precompilation_required();
 		return parent::writeCacheFile( $file, $content );
 	}
 
+	/**
+	 * {@inheritdoc}
+	 */
 	public function clearCacheFiles() {
 		$this->plugin->abort_if_precompilation_required();
 		return parent::clearCacheFiles();
