@@ -1,1 +1,2 @@
-twig-cache
+twig-cache/*
+!twig-cache/.gitkeep

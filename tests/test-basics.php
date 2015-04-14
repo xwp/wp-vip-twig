@@ -6,7 +6,8 @@ class BasicsTest extends \WP_UnitTestCase {
 
 	function setUp() {
 		if ( ! vip_twig_environment()->getCache() ) {
-			throw new \Exception( 'Cache is empty.' );
+			$location = vip_twig_environment()->plugin->not_writable_cache_location;
+			throw new \Exception( $location ? "Cache dir is not writable: $location" : 'Cache dir not supplied' );
 		}
 		if ( ! file_exists( vip_twig_environment()->getCache() ) ) {
 			// @codingStandardsIgnoreStart
