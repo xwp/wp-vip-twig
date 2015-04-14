@@ -116,7 +116,18 @@ class Twig_Environment extends \Twig_Environment {
 		 */
 		$context = apply_filters( 'vip_twig_render_template_context', $context, $name );
 
-		return parent::render( $name, $context );
+		if ( empty( $context['disable_render_cache'] ) && $this->plugin->config['render_cache_ttl'] > 0 ) {
+			$rendered = $this->plugin->render_caching->wrap_render( $name, $context, function () use ( $name, $context ) {
+				// @todo the Twig functions executed should be able to add to the cache context when they are invoked, or to disable caching altogether? No, this is chicken and egg problem.
+				// @todo We need to make sure that the dynamic twig functions do not get cached
+				return parent::render( $name, $context );
+			} );
+		} else {
+			unset( $context['disable_render_cache'] );
+			$rendered = parent::render( $name, $context );
+		}
+
+		return $rendered;
 	}
 
 	/**

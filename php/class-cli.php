@@ -158,11 +158,27 @@ class CLI extends \WP_CLI_Command {
 				}
 			}
 
+			$this->plugin->render_caching->bump_incrementor();
+
 			\WP_CLI::success( sprintf( 'Compiled %d Twig template(s)', count( $twig_templates ) ) );
 
 		} catch ( \Exception $e ) {
 			\WP_CLI::error( sprintf( '%s: %s', get_class( $e ), $e->getMessage() ) );
 		}
+	}
+
+	/**
+	 * Invalidate the render cache.
+	 *
+	 * @subcommand invalidate-render-cache
+	 */
+	public function invalidate_render_cache() {
+		if ( $this->plugin->config['render_cache_ttl'] <= 0 ) {
+			\WP_CLI::error( 'Render cache is not enabled due to render_cache_ttl <= 0' );
+		}
+
+		$incrementor = $this->plugin->render_caching->bump_incrementor();
+		\WP_CLI::success( "Render cache invalidated. New cache incrementor: $incrementor" );
 	}
 
 }
