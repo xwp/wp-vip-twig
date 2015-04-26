@@ -142,10 +142,16 @@ class Plugin {
 		$this->twig_environment = new Twig_Environment( $this, $this->twig_loader, $this->config['environment_options'] );
 		$this->render_caching = new Render_Caching( $this );
 
+		// Replace \Twig_Extension_Core with our subclass override
+		$core = new Twig_Extension_Core( $this );
+		$this->twig_environment->addExtension( $core );
+		if ( $core !== $this->twig_environment->getExtension( 'core' ) ) {
+			throw new Exception( 'Unable to override core extension' );
+		}
 		$this->twig_environment->addExtension( new Twig_Extension_Rawless_Escaper() );
 
 		if ( get_option( 'timezone_string' ) ) {
-			$this->twig_environment->getExtension( 'core' )->setTimezone( get_option( 'timezone_string' ) );
+			$core->setTimezone( get_option( 'timezone_string' ) );
 		}
 
 		if ( ! empty( $this->config['environment_options']['debug'] ) ) {
