@@ -8,6 +8,8 @@ Proposal to make Twig conform for use on WordPress.com VIP and other production 
 **Stable tag:** trunk (master)  
 **License:** [GPLv2 or later](http://www.gnu.org/licenses/gpl-2.0.html)  
 
+[![Build Status](https://travis-ci.org/xwp/wp-vip-twig.png?branch=master)](https://travis-ci.org/xwp/wp-vip-twig) 
+
 ## Description ##
 
 This plugin is an attempt to force Twig to work in a production environment where
