@@ -106,6 +106,20 @@ class BasicsTest extends \WP_UnitTestCase {
 	}
 
 	/**
+	 * @see Plugin::init()
+	 */
+	function test_eliminated_autoescape_parser() {
+		$exception = null;
+		try {
+			vip_twig_environment()->render( 'autoescape.html.twig', array( 'html_data' => '<b>hello!</b>' ) );
+		} catch ( \Exception $e ) {
+			$exception = $e;
+		}
+		$this->assertInstanceOf( '\Twig_Error_Syntax', $exception );
+		$this->assertContains( 'Unknown tag name "autoescape"', $exception->getMessage() );
+	}
+
+	/**
 	 * @see Twig_Extension_Core::escape_filter()
 	 */
 	function test_escaping() {
