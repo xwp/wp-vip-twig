@@ -142,6 +142,8 @@ class Plugin {
 		$this->twig_environment = new Twig_Environment( $this, $this->twig_loader, $this->config['environment_options'] );
 		$this->render_caching = new Render_Caching( $this );
 
+		$this->twig_environment->addExtension( new Twig_Extension_Rawless_Escaper() );
+
 		if ( get_option( 'timezone_string' ) ) {
 			$this->twig_environment->getExtension( 'core' )->setTimezone( get_option( 'timezone_string' ) );
 		}

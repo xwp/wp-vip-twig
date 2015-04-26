@@ -85,10 +85,25 @@ class BasicsTest extends \WP_UnitTestCase {
 	}
 
 	function test_wp_kses_post_custom_filter() {
-		$this->assertEquals( 0, count( glob( vip_twig_environment()->getCache() . '/*.php' ) ) );
+		$rendered = vip_twig_environment()->render( 'wp-kses.html.twig', array(
+			'content' => '<script>alert("evil")</script>',
+		) );
+		$this->assertNotContains( '<script', $rendered );
+	}
 
-		$raw_filter = vip_twig_environment()->render( 'wp-kses-filter/raw.html.twig' );
-		$this->assertTrue( 0 !== preg_match_all( '/<\/*script>/', $raw_filter ) );
+	/**
+	 * @see Plugin::init()
+	 */
+	function test_eliminated_raw_filter() {
+		$exception = null;
+		try {
+			vip_twig_environment()->render( 'raw.html.twig', array( 'unsanitized_data' => '<script>alert(1)</script>' ) );
+		} catch ( \Exception $e ) {
+			$exception = $e;
+		}
+		$this->assertInstanceOf( '\Twig_Error_Syntax', $exception );
+		$this->assertContains( 'The filter "raw" does not exist', $exception->getMessage() );
+	}
 
 		$wp_kses_filter = vip_twig_environment()->render( 'wp-kses-filter/wpkses.html.twig' );
 		$this->assertTrue( 1 !== preg_match_all( '/<\/*script>/', $wp_kses_filter ) );
