@@ -108,15 +108,23 @@ class BasicsTest extends \WP_UnitTestCase {
 	/**
 	 * @see Plugin::init()
 	 */
-	function test_eliminated_autoescape_parser() {
+	function test_modified_disabled_autoescape_parser() {
+		$rendered = vip_twig_environment()->render( 'autoescape-true.html.twig', array( 'data' => 'var x = "fo\nod";' ) );;
+		$this->assertEquals( 'var x = &quot;fo\nod&quot;;', trim( $rendered ) );
+	}
+
+	/**
+	 * @see Plugin::init()
+	 */
+	function test_disabled_autoescape_parser() {
 		$exception = null;
 		try {
-			vip_twig_environment()->render( 'autoescape.html.twig', array( 'html_data' => '<b>hello!</b>' ) );
+			vip_twig_environment()->render( 'autoescape-false.html.twig', array( 'malicious_data' => '<script>alert("evil");</script>' ) );
 		} catch ( \Exception $e ) {
 			$exception = $e;
 		}
-		$this->assertInstanceOf( '\Twig_Error_Syntax', $exception );
-		$this->assertContains( 'Unknown tag name "autoescape"', $exception->getMessage() );
+		$this->assertInstanceOf( 'Twig_Error_Syntax', $exception );
+		$this->assertContains( '{% autoescape false %} is forbidden in VIP Twig', $exception->getMessage() );
 	}
 
 	/**
