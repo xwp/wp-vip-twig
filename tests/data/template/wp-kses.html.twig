@@ -6,14 +6,11 @@
 	<p>This is a story!</p>
 	<p>that shouldn't allow any</p>
 	<p>XSS attacks</p>
-	<script>
-		var hello = '';
-	</script>
 	<p>at least we hope so!</p>
 {% endset %}
 
 {% block main %}
 <main>
-	{{ content|default('')|raw }}
+	{{ content|default('')|wp_kses_post }}
 </main>
 {% endblock main %}
