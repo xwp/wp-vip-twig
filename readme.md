@@ -5,10 +5,10 @@ Proposal to make Twig conform for use on WordPress.com VIP and other production 
 
 **Contributors:** [westonruter](https://profiles.wordpress.org/westonruter), [xwp](https://profiles.wordpress.org/xwp)  
 **Tags:** [twig](https://wordpress.org/plugins/tags/twig), [templates](https://wordpress.org/plugins/tags/templates)  
-**Requires at least:**   
-**Tested up to:** 4.0  
 **Stable tag:** trunk (master)  
 **License:** [GPLv2 or later](http://www.gnu.org/licenses/gpl-2.0.html)  
+
+[![Build Status](https://travis-ci.org/xwp/wp-vip-twig.png?branch=master)](https://travis-ci.org/xwp/wp-vip-twig) 
 
 ## Description ##
 
