@@ -78,6 +78,7 @@ class Plugin {
 				'strict_variables' => true,
 				'autoescape' => 'html',
 			),
+			'catch_exceptions' => true,
 			'add_wp_kses_post_filter' => true,
 			'loader_template_paths' => array(),
 			'vip_plugin_folders' => array( 'plugins' ), // On VIP, you may want to filter the config to add 'acmecorp-plugins'
@@ -86,6 +87,7 @@ class Plugin {
 
 		if ( $is_unit_testing ) {
 			$default_config['environment_options']['auto_reload'] = true;
+			$default_config['catch_exceptions'] = false;
 		}
 
 		$default_config['loader_template_paths'][] = trailingslashit( get_stylesheet_directory() );
