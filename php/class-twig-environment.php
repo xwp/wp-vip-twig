@@ -116,15 +116,35 @@ class Twig_Environment extends \Twig_Environment {
 		 */
 		$context = apply_filters( 'vip_twig_render_template_context', $context, $name );
 
-		if ( empty( $context['disable_render_cache'] ) && $this->plugin->config['render_cache_ttl'] > 0 ) {
-			$rendered = $this->plugin->render_caching->wrap_render( $name, $context, function () use ( $name, $context ) {
-				// @todo the Twig functions executed should be able to add to the cache context when they are invoked, or to disable caching altogether? No, this is chicken and egg problem.
-				// @todo We need to make sure that the dynamic twig functions do not get cached
-				return parent::render( $name, $context );
-			} );
-		} else {
-			unset( $context['disable_render_cache'] );
-			$rendered = parent::render( $name, $context );
+		try {
+			if ( empty( $context['disable_render_cache'] ) && $this->plugin->config['render_cache_ttl'] > 0 ) {
+				$rendered = $this->plugin->render_caching->wrap_render( $name, $context, function () use ( $name, $context ) {
+					// @todo the Twig functions executed should be able to add to the cache context when they are invoked, or to disable caching altogether? No, this is chicken and egg problem.
+					// @todo We need to make sure that the dynamic twig functions do not get cached
+					return parent::render( $name, $context );
+				} );
+			}
+			else {
+				unset( $context['disable_render_cache'] );
+				$rendered = parent::render( $name, $context );
+			}
+		} catch ( \Exception $e ) {
+			if ( empty( $this->plugin->config['catch_exceptions'] ) ) {
+				throw $e;
+			}
+
+			nocache_headers();
+			if ( current_user_can( 'edit_theme_options' ) ) {
+				$message = get_class( $e ) . ': ' . $e->getMessage();
+			} else {
+				$message = __( 'Oops. Broken branch?', 'vip-twig' );
+				trigger_error( esc_html( $e->getMessage() ), E_USER_WARNING );
+			}
+			wp_die(
+				esc_html( $message ),
+				esc_html__( 'Twig exception', 'vip-twig' ),
+				array( 'response' => 500 )
+			);
 		}
 
 		return $rendered;
