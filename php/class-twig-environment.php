@@ -137,8 +137,10 @@ class Twig_Environment extends \Twig_Environment {
 			if ( current_user_can( 'edit_theme_options' ) ) {
 				$message = get_class( $e ) . ': ' . $e->getMessage();
 			} else {
-				$message = __( 'Oops. Broken branch?', 'vip-twig' );
-				trigger_error( esc_html( $e->getMessage() ), E_USER_WARNING );
+				$message = __( 'Oops. Broken branch? Login as administrator to see the issue.', 'vip-twig' );
+				if ( ! $this->plugin->is_wpcom_vip_prod() ) {
+					trigger_error( esc_html( $e->getMessage() ), E_USER_WARNING );
+				}
 			}
 			wp_die(
 				esc_html( $message ),
