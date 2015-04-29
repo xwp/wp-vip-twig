@@ -254,7 +254,9 @@ class Plugin {
 				throw new Exception( 'Twig environment_options auto_reload must not be enabled on VIP.' );
 			}
 			if ( ! empty( $this->config['environment_options']['debug'] ) ) {
-				trigger_error( 'Twig debug=false is required on VIP', E_USER_WARNING );
+				if ( ! $this->is_wpcom_vip_prod() ) {
+					trigger_error( 'Twig debug=false is required on VIP', E_USER_WARNING );
+				}
 				$this->config['environment_options']['debug'] = false;
 			}
 		}
