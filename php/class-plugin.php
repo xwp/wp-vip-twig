@@ -68,7 +68,7 @@ class Plugin {
 		}
 
 		$default_config = array(
-			'twig_lib_path' => $this->dir_path . '/vendor/twig/lib',
+			'twig_lib_path' => $this->is_wpcom_vip_prod() ? \WP_CONTENT_DIR . '/plugins/Twig' : $this->dir_path . '/vendor/twig/lib',
 			'render_cache_ttl' => HOUR_IN_SECONDS, // filter to 0 to disable; immediate invalidation can be done via WP-CLI `wp vip-twig invalidate-render-cache` or the vip_twig_invalidate_render_cache Ajax action
 			'invalidate_render_cache_auth_key' => '', // the required auth_key param in a URL like: https://example.wordpress.com/wp-admin/admin-ajax.php?action=vip_twig_invalidate_render_cache&auth_key=abc123
 			'environment_options' => array(
@@ -118,17 +118,17 @@ class Plugin {
 		$plugin = $this;
 		if ( defined( '\WP_TEST_VIP_TWIG_THEME_ROOT' ) ) {
 			add_filter( 'theme_root', function () use ( $plugin ) {
-				return trailingslashit( $plugin->dir_path ) . \WP_TEST_VIP_TWIG_THEME_ROOT;
+				return trailingslashit( $plugin->dir_path ) . constant( '\WP_TEST_VIP_TWIG_THEME_ROOT' );
 			} );
 		}
 		if ( defined( '\WP_TEST_VIP_TWIG_STYLESHEET' ) ) {
 			add_filter( 'option_stylesheet', function () {
-				return \WP_TEST_VIP_TWIG_STYLESHEET;
+				return constant( '\WP_TEST_VIP_TWIG_STYLESHEET' );
 			} );
 		}
 		if ( defined( '\WP_TEST_VIP_TWIG_TEMPLATE' ) ) {
 			add_filter( 'option_template', function () {
-				return \WP_TEST_VIP_TWIG_TEMPLATE;
+				return constant( '\WP_TEST_VIP_TWIG_TEMPLATE' );
 			} );
 		}
 	}
