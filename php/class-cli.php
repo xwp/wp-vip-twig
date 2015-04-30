@@ -92,7 +92,7 @@ class CLI extends \WP_CLI_Command {
 				throw new Exception( 'No loader_template_paths config supplied.' );
 			}
 			if ( empty( $this->plugin->config['environment_options']['cache'] ) ) {
-				throw new Exception( 'No cache config supplied.' );
+				throw new Exception( 'The supplied directory is not writable: ' . $this->plugin->not_writable_cache_location );
 			}
 			$cache_dir = $this->plugin->config['environment_options']['cache'];
 			if ( ! file_exists( $cache_dir ) ) {
@@ -130,8 +130,6 @@ class CLI extends \WP_CLI_Command {
 			}
 			$twig_templates = array_unique( $twig_templates );
 
-			$this->plugin->config['precompilation_required'] = false;
-
 			$previous_cache_files = $this->find_files( $cache_dir, '/\.php$/' );
 			$present_cache_files = array();
 
@@ -160,11 +158,27 @@ class CLI extends \WP_CLI_Command {
 				}
 			}
 
+			$this->plugin->render_caching->bump_incrementor();
+
 			\WP_CLI::success( sprintf( 'Compiled %d Twig template(s)', count( $twig_templates ) ) );
 
 		} catch ( \Exception $e ) {
 			\WP_CLI::error( sprintf( '%s: %s', get_class( $e ), $e->getMessage() ) );
 		}
+	}
+
+	/**
+	 * Invalidate the render cache.
+	 *
+	 * @subcommand invalidate-render-cache
+	 */
+	public function invalidate_render_cache() {
+		if ( $this->plugin->config['render_cache_ttl'] <= 0 ) {
+			\WP_CLI::error( 'Render cache is not enabled due to render_cache_ttl <= 0' );
+		}
+
+		$incrementor = $this->plugin->render_caching->bump_incrementor();
+		\WP_CLI::success( "Render cache invalidated. New cache incrementor: $incrementor" );
 	}
 
 }

@@ -1,3 +1,5 @@
+sudo: false
+
 language:
     - php
     - node_js
@@ -11,12 +13,13 @@ node_js:
 
 env:
     - WP_VERSION=latest WP_MULTISITE=1
-    - WP_VERSION=4.0 WP_MULTISITE=1
+    - WP_VERSION=4.2 WP_MULTISITE=1
 
 before_script:
     - export DEV_LIB_PATH=dev-lib
     - if [ ! -e "$DEV_LIB_PATH" ] && [ -L .travis.yml ]; then export DEV_LIB_PATH=$( dirname $( readlink .travis.yml ) ); fi
     - source $DEV_LIB_PATH/travis.before_script.sh
+    - mkdir -p tests/data/stylesheet/twig-cache
 
 script:
     - $DEV_LIB_PATH/travis.script.sh

@@ -53,7 +53,6 @@ class Twig_Environment extends \Twig_Environment {
 	protected function prepareTemplateName( $name ) {
 		$name = preg_replace( '#//+#', '/', $name );
 		$name = preg_replace( '#\.+/#', '', $name ); // @todo better scrub of relative paths? Can relative paths even be used?
-		$name .= '.' . substr( hash( 'sha256', $this->getLoader()->getCacheKey( $name ) ), 0, 6 ); // @todo This probably is not necessary
 		return $name;
 	}
 
@@ -81,10 +80,76 @@ class Twig_Environment extends \Twig_Environment {
 	 *
 	 * @return string The template class name
 	 */
-	public function getTemplateClass($name, $index = null) {
+	public function getTemplateClass( $name, $index = null ) {
 		$name = $this->prepareTemplateName( $name );
 		$name = preg_replace( '/\W/', '_', $name );
 		return $this->templateClassPrefix . $name . (null === $index ? '' : '_'.$index);
+	}
+
+	/**
+	 * Renders a template, with the template name and context being filterable.
+	 *
+	 * @param string $name    The template name
+	 * @param array  $context An array of parameters to pass to the template
+	 *
+	 * @return string The rendered template
+	 *
+	 * @throws \Twig_Error_Loader  When the template cannot be found
+	 * @throws \Twig_Error_Syntax  When an error occurred during compilation
+	 * @throws \Twig_Error_Runtime When an error occurred during rendering
+	 */
+	public function render( $name, array $context = array() ) {
+
+		/**
+		 * Filter the template $name used to render the $context.
+		 *
+		 * @param array $context data
+		 * @param string $name of the template
+		 */
+		$name = apply_filters( 'vip_twig_render_template_name', $name, $context );
+
+		/**
+		 * Filter the $context passed when rendering template $name.
+		 *
+		 * @param array $context data
+		 * @param string $name of the template
+		 */
+		$context = apply_filters( 'vip_twig_render_template_context', $context, $name );
+
+		try {
+			if ( empty( $context['disable_render_cache'] ) && $this->plugin->config['render_cache_ttl'] > 0 ) {
+				$rendered = $this->plugin->render_caching->wrap_render( $name, $context, function () use ( $name, $context ) {
+					// @todo the Twig functions executed should be able to add to the cache context when they are invoked, or to disable caching altogether? No, this is chicken and egg problem.
+					// @todo We need to make sure that the dynamic twig functions do not get cached
+					return parent::render( $name, $context );
+				} );
+			}
+			else {
+				unset( $context['disable_render_cache'] );
+				$rendered = parent::render( $name, $context );
+			}
+		} catch ( \Exception $e ) {
+			if ( empty( $this->plugin->config['catch_exceptions'] ) ) {
+				throw $e;
+			}
+
+			nocache_headers();
+			if ( current_user_can( 'edit_theme_options' ) ) {
+				$message = get_class( $e ) . ': ' . $e->getMessage();
+			} else {
+				$message = __( 'Oops. Broken branch? Login as administrator to see the issue.', 'vip-twig' );
+				if ( ! $this->plugin->is_wpcom_vip_prod() ) {
+					trigger_error( esc_html( $e->getMessage() ), E_USER_WARNING );
+				}
+			}
+			wp_die(
+				esc_html( $message ),
+				esc_html__( 'Twig exception', 'vip-twig' ),
+				array( 'response' => 500 )
+			);
+		}
+
+		return $rendered;
 	}
 
 	/**
