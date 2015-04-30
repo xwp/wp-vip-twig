@@ -118,17 +118,17 @@ class Plugin {
 		$plugin = $this;
 		if ( defined( '\WP_TEST_VIP_TWIG_THEME_ROOT' ) ) {
 			add_filter( 'theme_root', function () use ( $plugin ) {
-				return trailingslashit( $plugin->dir_path ) . \WP_TEST_VIP_TWIG_THEME_ROOT;
+				return trailingslashit( $plugin->dir_path ) . constant( '\WP_TEST_VIP_TWIG_THEME_ROOT' );
 			} );
 		}
 		if ( defined( '\WP_TEST_VIP_TWIG_STYLESHEET' ) ) {
 			add_filter( 'option_stylesheet', function () {
-				return \WP_TEST_VIP_TWIG_STYLESHEET;
+				return constant( '\WP_TEST_VIP_TWIG_STYLESHEET' );
 			} );
 		}
 		if ( defined( '\WP_TEST_VIP_TWIG_TEMPLATE' ) ) {
 			add_filter( 'option_template', function () {
-				return \WP_TEST_VIP_TWIG_TEMPLATE;
+				return constant( '\WP_TEST_VIP_TWIG_TEMPLATE' );
 			} );
 		}
 	}
