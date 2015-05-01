@@ -51,6 +51,7 @@ class Twig_Environment extends \Twig_Environment {
 	 * @return string
 	 */
 	protected function prepareTemplateName( $name ) {
+		$name = ltrim( $name, '/' );
 		$name = preg_replace( '#//+#', '/', $name );
 		$name = preg_replace( '#\.+/#', '', $name ); // @todo better scrub of relative paths? Can relative paths even be used?
 		return $name;
@@ -83,7 +84,7 @@ class Twig_Environment extends \Twig_Environment {
 	public function getTemplateClass( $name, $index = null ) {
 		$name = $this->prepareTemplateName( $name );
 		$name = preg_replace( '/\W/', '_', $name );
-		return $this->templateClassPrefix . $name . (null === $index ? '' : '_'.$index);
+		return $this->templateClassPrefix . $name . ( null === $index ? '' : '_' . $index );
 	}
 
 	/**
@@ -97,6 +98,7 @@ class Twig_Environment extends \Twig_Environment {
 	 * @throws \Twig_Error_Loader  When the template cannot be found
 	 * @throws \Twig_Error_Syntax  When an error occurred during compilation
 	 * @throws \Twig_Error_Runtime When an error occurred during rendering
+	 * @throws \Exception
 	 */
 	public function render( $name, array $context = array() ) {
 
