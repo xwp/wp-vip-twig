@@ -1,5 +1,5 @@
 === VIP Twig ===
-Contributors: westonruter, xwp
+Contributors: westonruter, xwp, newscorpau
 Tags: twig, templates
 Stable tag: trunk
 License: GPLv2 or later

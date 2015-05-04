@@ -3,7 +3,7 @@
 
 Proposal to make Twig conform for use on WordPress.com VIP and other production environments where runtime compilation of templates is not allowed.
 
-**Contributors:** [westonruter](https://profiles.wordpress.org/westonruter), [xwp](https://profiles.wordpress.org/xwp)  
+**Contributors:** [westonruter](https://profiles.wordpress.org/westonruter), [xwp](https://profiles.wordpress.org/xwp), [newscorpau](https://profiles.wordpress.org/newscorpau)  
 **Tags:** [twig](https://wordpress.org/plugins/tags/twig), [templates](https://wordpress.org/plugins/tags/templates)  
 **Stable tag:** trunk (master)  
 **License:** [GPLv2 or later](http://www.gnu.org/licenses/gpl-2.0.html)  
