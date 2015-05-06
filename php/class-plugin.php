@@ -68,7 +68,7 @@ class Plugin {
 		}
 
 		$default_config = array(
-			'twig_lib_path' => $this->is_wpcom_vip_prod() ? \WP_CONTENT_DIR . '/plugins/Twig' : $this->dir_path . '/vendor/twig/lib',
+			'twig_lib_path' => $this->is_wpcom_vip_prod() ? \WP_CONTENT_DIR . '/plugins/Twig' : $this->dir_path . '/vendor/twig/lib/Twig',
 			'render_cache_ttl' => HOUR_IN_SECONDS, // filter to 0 to disable; immediate invalidation can be done via WP-CLI `wp vip-twig invalidate-render-cache` or the vip_twig_invalidate_render_cache Ajax action
 			'invalidate_render_cache_auth_key' => '', // the required auth_key param in a URL like: https://example.wordpress.com/wp-admin/admin-ajax.php?action=vip_twig_invalidate_render_cache&auth_key=abc123
 			'environment_options' => array(
@@ -408,6 +408,7 @@ class Plugin {
 	 */
 	function autoload_twig( $class ) {
 		$class_path = trailingslashit( $this->config['twig_lib_path'] );
+		$class = preg_replace( '/^Twig_/', '', $class );
 		$class_path .= str_replace( array( '_', "\0" ), array( '/', '' ), $class );
 		$class_path .= '.php';
 		if ( is_file( $class_path ) ) {
