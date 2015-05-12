@@ -83,6 +83,7 @@ class Plugin {
 			'loader_template_paths' => array(),
 			'vip_plugin_folders' => array( 'plugins' ), // On VIP, you may want to filter the config to add 'acmecorp-plugins'
 			'charset' => get_bloginfo( 'charset' ), // TODO: VIP should always by Latin1
+			'write_source_map_lines' => false, // whether or not to include `// line 123` in the compiled PHP
 		);
 
 		if ( $is_unit_testing ) {
@@ -142,6 +143,7 @@ class Plugin {
 
 		$this->twig_loader = new Twig_Loader( $this, $this->config['loader_template_paths'] );
 		$this->twig_environment = new Twig_Environment( $this, $this->twig_loader, $this->config['environment_options'] );
+		$this->twig_environment->setCompiler( new Twig_Compiler( $this, $this->twig_environment ) );
 		$this->render_caching = new Render_Caching( $this );
 
 		// Replace \Twig_Extension_Core with our subclass override
