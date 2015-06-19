@@ -105,7 +105,7 @@ class Twig_Extension_Core extends \Twig_Extension_Core {
 	 * @throws \Twig_Error_Runtime
 	 * @see \twig_escape_filter()
 	 */
-	function escape_filter( \Twig_Environment $env, $string, $strategy = 'html', $charset = null, $autoescape = false )  {
+	function escape_filter( \Twig_Environment $env, $string, $strategy = 'html', $charset = null, $autoescape = false ) {
 		unset( $env );
 
 		if ( $autoescape && $string instanceof \Twig_Markup ) {

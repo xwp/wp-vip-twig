@@ -125,8 +125,7 @@ class Twig_Environment extends \Twig_Environment {
 					// @todo We need to make sure that the dynamic twig functions do not get cached
 					return parent::render( $name, $context );
 				} );
-			}
-			else {
+			} else {
 				unset( $context['disable_render_cache'] );
 				$rendered = parent::render( $name, $context );
 			}
