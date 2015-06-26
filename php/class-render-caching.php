@@ -52,12 +52,24 @@ class Render_Caching {
 	}
 
 	/**
+	 * Get the cache key for a given template and context.
+	 *
 	 * @param string $name Template
 	 * @param array $context Data
 	 * @return string|mixed
 	 */
 	function get_cache_key( $name, $context ) {
 		$incrementor = $this->get_incrementor();
+
+		/**
+		 * Allow the incrementor used in a cache key to be filtered.
+		 *
+		 * This allows a theme/plugin to bust the cache via a changing revision number.
+		 *
+		 * @param int $incrementor
+		 */
+		$incrementor = apply_filters( 'vip_twig_cache_key_incrementor', $incrementor );
+
 		$cache_key = md5( serialize( compact( 'name', 'context', 'incrementor' ) ) );
 		return $cache_key;
 	}
@@ -71,7 +83,7 @@ class Render_Caching {
 	function wrap_render( $name, $context, $renderer ) {
 		$cache_key = $this->get_cache_key( $name, $context );
 		$rendered = wp_cache_get( $cache_key, self::OBJECT_CACHE_GROUP );
-		if ( ! $rendered ) {
+		if ( false === $rendered ) {
 			$rendered = call_user_func( $renderer, $name, $context );
 			wp_cache_set( $cache_key, $rendered, self::OBJECT_CACHE_GROUP );
 		}
