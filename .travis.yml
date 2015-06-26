@@ -16,7 +16,6 @@ branches:
         - master
 
 env:
-    - WP_VERSION=latest WP_MULTISITE=1
     - WP_VERSION=trunk WP_MULTISITE=1
 
 before_script:
