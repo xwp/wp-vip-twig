@@ -90,7 +90,7 @@ class Render_Caching {
 				status_header( 403 );
 				wp_send_json_error( 'Missing auth_key param' );
 			}
-			if ( sanitize_text_field( $_REQUEST['auth_key'] ) !== $this->plugin->config['invalidate_render_cache_auth_key'] ) { // input var okay
+			if ( sanitize_text_field( wp_unslash( $_REQUEST['auth_key'] ) ) !== $this->plugin->config['invalidate_render_cache_auth_key'] ) { // input var okay
 				status_header( 403 );
 				wp_send_json_error( 'Invalid auth_key param' );
 			}

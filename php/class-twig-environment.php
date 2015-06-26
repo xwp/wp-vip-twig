@@ -25,7 +25,7 @@ class Twig_Environment extends \Twig_Environment {
 
 	public function enableAutoReload() {
 		$this->plugin->abort_if_precompilation_required();
-		return parent::enableAutoReload();
+		parent::enableAutoReload();
 	}
 
 	public function isAutoReload() {
@@ -101,6 +101,7 @@ class Twig_Environment extends \Twig_Environment {
 	 * @throws \Exception
 	 */
 	public function render( $name, array $context = array() ) {
+		$rendered = false;
 
 		/**
 		 * Filter the template $name used to render the $context.
@@ -192,12 +193,12 @@ class Twig_Environment extends \Twig_Environment {
 
 	public function writeCacheFile( $file, $content ) {
 		$this->plugin->abort_if_precompilation_required();
-		return parent::writeCacheFile( $file, $content );
+		parent::writeCacheFile( $file, $content );
 	}
 
 	public function clearCacheFiles() {
 		$this->plugin->abort_if_precompilation_required();
-		return parent::clearCacheFiles();
+		parent::clearCacheFiles();
 	}
 
 }
