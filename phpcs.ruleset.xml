@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <ruleset name="WordPress Coding Standards for VIP Twig plugin">
 
+	<rule ref="WordPress-VIP" />
 	<rule ref="WordPress.NamingConventions.ValidFunctionName">
 		<exclude-pattern>php/class-twig*.php</exclude-pattern>
 	</rule>
