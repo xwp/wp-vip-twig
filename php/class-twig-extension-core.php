@@ -73,7 +73,7 @@ class Twig_Extension_Core extends \Twig_Extension_Core {
 			$css = preg_replace( '/\\\\([0-9a-fA-F]{4})/', '\\\\\\\\$1', $css );
 
 			$csstidy->parse( $css );
-			$css = $csstidy->print->plain();
+			$css = $csstidy->print->plain(); // WPCS: xss ok.
 		}
 		return $css;
 	}
