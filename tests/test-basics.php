@@ -151,7 +151,7 @@ class BasicsTest extends \WP_UnitTestCase {
 		// Note in the following examples, the HTML escape is also applied.
 		$this->assertEquals( '&lt;input onclick=&quot;alert(1)&quot;&gt;', $results['test_escape_html'] );
 		$this->assertEquals( $results['test_escape_html'], $results['test_escape_default'] );
-		$this->assertEquals( 'http://example.com/?foo=bar&amp;baz=quuxafternull', $results['test_escape_url'] );
+		$this->assertEquals( 'http://example.com/?foo=bar&#038;baz=quuxafternull', $results['test_escape_url'] );
 		$this->assertEquals( 'I do &#039;not&#039; love &quot;straight quotes&quot;', $results['test_escape_attr'] );
 		$this->assertEquals( 'var x = &quot;fonod&quot;;', $results['test_escape_js'] );
 		$this->assertEquals( 'body { background-image: url( &quot;http://example.com/food.png&quot; ); }', $results['test_escape_css'] );
