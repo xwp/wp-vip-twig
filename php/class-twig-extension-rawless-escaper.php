@@ -33,5 +33,4 @@ class Twig_Extension_Rawless_Escaper extends \Twig_Extension_Escaper {
 		$parsers[] = new Twig_Undisableable_TokenParser_AutoEscape();
 		return $parsers;
 	}
-
 }

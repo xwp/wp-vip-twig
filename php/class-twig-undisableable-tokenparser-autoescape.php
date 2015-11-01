@@ -30,5 +30,4 @@ class Twig_Undisableable_TokenParser_AutoEscape extends \Twig_TokenParser_AutoEs
 		}
 		return parent::parse( $token );
 	}
-
 }

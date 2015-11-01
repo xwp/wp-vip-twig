@@ -24,5 +24,4 @@ class Twig_Loader extends \Twig_Loader_Filesystem {
 		}
 		parent::setPaths( $paths, $namespace );
 	}
-
 }

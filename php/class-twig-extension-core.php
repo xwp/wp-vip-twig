@@ -73,7 +73,8 @@ class Twig_Extension_Core extends \Twig_Extension_Core {
 			$css = preg_replace( '/\\\\([0-9a-fA-F]{4})/', '\\\\\\\\$1', $css );
 
 			$csstidy->parse( $css );
-			$css = $csstidy->print->plain();
+			$css_printer = $csstidy->print;
+			$css = $css_printer->plain();
 		}
 		return $css;
 	}
@@ -172,5 +173,4 @@ class Twig_Extension_Core extends \Twig_Extension_Core {
 				throw new \Twig_Error_Runtime( sprintf( 'Unrecognized VIP escaping strategy "%s".', $strategy ) );
 		}
 	}
-
 }

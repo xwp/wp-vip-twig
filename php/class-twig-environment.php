@@ -200,5 +200,4 @@ class Twig_Environment extends \Twig_Environment {
 		$this->plugin->abort_if_precompilation_required();
 		parent::clearCacheFiles();
 	}
-
 }

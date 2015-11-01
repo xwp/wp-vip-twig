@@ -468,5 +468,4 @@ class Plugin {
 		$dir_basename = basename( $plugin_dir );
 		return compact( 'dir_url', 'dir_path', 'dir_basename' );
 	}
-
 }

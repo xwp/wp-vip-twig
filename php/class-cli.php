@@ -180,5 +180,4 @@ class CLI extends \WP_CLI_Command {
 		$incrementor = $this->plugin->render_caching->bump_incrementor();
 		\WP_CLI::success( "Render cache invalidated. New cache incrementor: $incrementor" );
 	}
-
 }

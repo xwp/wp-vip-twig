@@ -15,7 +15,7 @@ class Twig_Compiler extends \Twig_Compiler {
 	 * @param Plugin $plugin
 	 * @param \Twig_Environment $env The twig environment instance
 	 */
-	public function __construct( Plugin $plugin, \Twig_Environment $env) {
+	public function __construct( Plugin $plugin, \Twig_Environment $env ) {
 		$this->plugin = $plugin;
 		parent::__construct( $env );
 	}
@@ -56,5 +56,4 @@ class Twig_Compiler extends \Twig_Compiler {
 
 		return $this;
 	}
-
 }

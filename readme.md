@@ -17,7 +17,7 @@ runtime compilation of Twig templates into PHP class files is not allowed. This
 is true on WordPress.com VIP and should also be true on other production environments
 where filesystem write access is disabled (see also `DISALLOW_FILE_MODS`).
 
-**This plugin is a proposal and has not been approved by WordPress.com VIP.**
+**This plugin has not been approved by WordPress.com VIP for general use.**
 
 This plugin does not currently provide any WordPress-specific extensions to Twig,
 such as those found in [Timber](http://upstatement.com/timber/); this plugin
