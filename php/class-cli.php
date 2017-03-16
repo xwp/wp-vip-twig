@@ -8,7 +8,7 @@ namespace VIP_Twig;
 class CLI extends \WP_CLI_Command {
 
 	/**
-	 * This gets set by Plugin::__construct()
+	 * This gets set by Plugin->init()
 	 *
 	 * @var Plugin
 	 */
